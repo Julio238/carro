@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Anúncio - TunedCarsBR</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = { darkMode: 'class', theme: { extend: { colors: { 'tuned-red': '#e63946' } } } }
+  </script>
+</head>
+<body class="bg-gray-100 dark:bg-gray-900">
+
+  <header class="bg-tuned-dark text-white py-4 shadow-lg sticky top-0 z-50">
+    <div class="container mx-auto px-4 flex justify-between items-center">
+      <a href="index.html" class="text-2xl font-bold">Tuned<span class="text-tuned-red">Cars</span>BR</a>
+      <nav id="mainNav" class="hidden md:flex space-x-6 items-center"></nav>
+    </div>
+  </header>
+
+  <main class="container mx-auto px-4 py-10">
+    <div id="conteudoAnuncio" class="max-w-5xl mx-auto bg-white dark:bg-gray-800 rounded-2xl shadow-2xl overflow-hidden">
+      <!-- JS preenche aqui -->
+    </div>
+  </main>
+
+  <script>
+    // Header dinâmico
+    const user = JSON.parse(localStorage.getItem('userLogged'));
+    const nav = document.getElementById('mainNav');
+    if (user && user.loggedIn) {
+      let links = `<a href="perfil.html" class="hover:text-tuned-red">Perfil</a>`;
+      if (user.isAdmin) links += ` <a href="admin.html" class="text-green-400">Admin</a>`;
+      nav.innerHTML = `${links} <button onclick="logout()" class="bg-red-600 px-4 py-2 rounded-lg">Sair</button>`;
+    } else {
+      nav.innerHTML = `<a href="login.html" class="hover:text-tuned-red">Entrar</a><a href="cadastro.html" class="bg-tuned-red px-4 py-2 rounded">Cadastrar</a>`;
+    }
+    function logout() { localStorage.removeItem('userLogged'); location.href = 'index.html'; }
+
+    // Galeria
+    const id = parseInt(new URLSearchParams(location.search).get('id'));
+    const anuncios = JSON.parse(localStorage.getItem('anuncios')) || [];
+    const anuncio = anuncios[id];
+
+    if (!anuncio) {
+      document.getElementById('conteudoAnuncio').innerHTML = `<p class="p-10 text-center text-red-600 text-2xl">Anúncio não encontrado</p>`;
+    } else {
+      // ... (código da galeria que enviei anteriormente)
+      // Se precisar, posso reenviar a versão completa da galeria
+    }
+  </script>
+</body>
+</html>
