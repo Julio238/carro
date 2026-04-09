@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Admin - TunedCarsBR</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = { darkMode: 'class', theme: { extend: { colors: { 'tuned-red': '#e63946', 'tuned-dark': '#1d1d1d' } } } }
+  </script>
+</head>
+<body class="bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-gray-100 min-h-screen">
+
+  <header class="bg-tuned-dark text-white py-4 shadow-lg sticky top-0 z-50">
+    <div class="container mx-auto px-4 flex justify-between items-center">
+      <a href="index.html" class="text-2xl font-bold">Tuned<span class="text-tuned-red">Cars</span>BR</a>
+      <div class="flex items-center gap-6">
+        <span class="bg-green-600 px-3 py-1 rounded-full text-sm font-bold">ADMIN</span>
+        <a href="index.html" class="hover:text-tuned-red">Ver Site</a>
+        <button onclick="logout()" class="bg-red-600 hover:bg-red-700 px-5 py-2 rounded-lg">Sair</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Hero -->
+  <section class="bg-gradient-to-r from-gray-900 to-black text-white py-16">
+    <div class="container mx-auto px-4 text-center">
+      <h1 class="text-4xl md:text-5xl font-bold mb-4">Painel Administrativo</h1>
+      <p class="text-xl mb-8">Gerencie os anúncios do marketplace</p>
+      <button onclick="document.getElementById('formAdd').scrollIntoView({behavior:'smooth'})" 
+              class="bg-green-600 hover:bg-green-700 text-white font-bold py-4 px-10 rounded-xl text-lg">
+        + Adicionar Novo Anúncio
+      </button>
+    </div>
+  </section>
+
+  <!-- Lista de Anúncios -->
+  <section class="container mx-auto px-4 py-12">
+    <h2 class="text-3xl font-bold mb-10 text-center">Anúncios Atuais</h2>
+    <div id="listaAnuncios" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"></div>
+  </section>
+
+  <!-- Formulário -->
+  <section id="formAdd" class="bg-white dark:bg-gray-800 py-12">
+    <div class="container mx-auto px-4 max-w-4xl">
+      <h2 class="text-3xl font-bold mb-8 text-center">Adicionar Novo Veículo</h2>
+      
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <input id="marca" placeholder="Marca *" class="p-4 rounded-lg border" required>
+        <input id="modelo" placeholder="Modelo *" class="p-4 rounded-lg border" required>
+        <input id="ano" type="number" placeholder="Ano" class="p-4 rounded-lg border">
+        <input id="preco" type="number" placeholder="Preço (R$)" class="p-4 rounded-lg border">
+
+        <!-- Upload de Imagens -->
+        <div class="md:col-span-2">
+          <label class="block text-lg font-medium mb-3">Imagens do veículo</label>
+          
+          <div class="relative mb-6">
+            <input type="file" id="uploadImagens" accept="image/*" multiple class="absolute inset-0 opacity-0 cursor-pointer z-10">
+            <div class="flex flex-col items-center justify-center gap-3 p-10 border-2 border-dashed border-gray-400 rounded-xl hover:bg-gray-100 transition group">
+              <div class="w-16 h-16 bg-tuned-red/10 rounded-full flex items-center justify-center group-hover:bg-tuned-red/20">
+                <svg class="w-10 h-10 text-tuned-red" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
+                </svg>
+              </div>
+              <p class="text-xl font-medium">Clique ou arraste as fotos aqui</p>
+            </div>
+          </div>
+
+          <div class="flex gap-3 mb-4">
+            <input type="url" id="urlImagem" placeholder="URL da imagem" class="flex-1 p-4 rounded-lg border">
+            <button onclick="adicionarUrlImagem()" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-4 rounded-lg">+ URL</button>
+          </div>
+
+          <div id="previewImagens" class="grid grid-cols-3 sm:grid-cols-4 gap-3"></div>
+          <p class="mt-3">Imagens: <span id="contadorImagens" class="font-bold">0</span></p>
+        </div>
+
+        <textarea id="descricao" rows="5" placeholder="Descrição + modificações" class="p-4 rounded-lg border md:col-span-2"></textarea>
+      </div>
+
+      <button onclick="adicionarAnuncio()" class="mt-10 w-full bg-tuned-red hover:bg-red-700 text-white font-bold py-5 rounded-xl text-xl">
+        Publicar Anúncio
+      </button>
+    </div>
+  </section>
+
+  <footer class="bg-tuned-dark text-white py-8 text-center">
+    <p>© 2026 TunedCarsBR – Área Administrativa</p>
+  </footer>
+
+  <script>
+    let anuncios = JSON.parse(localStorage.getItem('anuncios')) || [];
+    let imagensTemp = [];
+
+    function renderizarAnuncios() {
+      const container = document.getElementById('listaAnuncios');
+      container.innerHTML = '';
+      if (anuncios.length === 0) {
+        container.innerHTML = '<p class="text-center py-12 text-xl text-gray-500">Nenhum anúncio cadastrado.</p>';
+        return;
+      }
+      anuncios.forEach((anuncio, index) => {
+        const img = anuncio.imagens?.[0] || 'https://via.placeholder.com/600x400?text=Sem+foto';
+        const card = document.createElement('div');
+        card.className = "bg-white dark:bg-gray-800 rounded-xl overflow-hidden shadow-lg";
+        card.innerHTML = `
+          <img src="${img}" class="w-full h-48 object-cover">
+          <div class="p-5">
+            <h3 class="font-bold">${anuncio.marca} ${anuncio.modelo}</h3>
+            <p class="text-tuned-red font-bold">R$ ${anuncio.preco?.toLocaleString('pt-BR')}</p>
+            <button onclick="excluirAnuncio(${index})" class="mt-4 w-full bg-red-600 text-white py-2 rounded-lg">Excluir</button>
+          </div>
+        `;
+        container.appendChild(card);
+      });
+    }
+
+    function adicionarUrlImagem() {
+      const url = document.getElementById('urlImagem').value.trim();
+      if (url) {
+        imagensTemp.push(url);
+        document.getElementById('urlImagem').value = '';
+        atualizarPreview();
+      }
+    }
+
+    document.getElementById('uploadImagens').addEventListener('change', (e) => {
+      for (let file of e.target.files) {
+        const reader = new FileReader();
+        reader.onload = (ev) => {
+          imagensTemp.push(ev.target.result);
+          atualizarPreview();
+        };
+        reader.readAsDataURL(file);
+      }
+    });
+
+    function atualizarPreview() {
+      const container = document.getElementById('previewImagens');
+      container.innerHTML = '';
+      imagensTemp.forEach((src, i) => {
+        const div = document.createElement('div');
+        div.className = "relative";
+        div.innerHTML = `<img src="${src}" class="w-full h-24 object-cover rounded">`;
+        container.appendChild(div);
+      });
+      document.getElementById('contadorImagens').textContent = imagensTemp.length;
+    }
+
+    function adicionarAnuncio() {
+      const novo = {
+        marca: document.getElementById('marca').value,
+        modelo: document.getElementById('modelo').value,
+        ano: document.getElementById('ano').value,
+        preco: parseFloat(document.getElementById('preco').value),
+        imagens: [...imagensTemp],
+        descricao: document.getElementById('descricao').value
+      };
+
+      if (!novo.marca || !novo.modelo) return alert("Marca e Modelo são obrigatórios");
+
+      anuncios.unshift(novo);
+      localStorage.setItem('anuncios', JSON.stringify(anuncios));
+      renderizarAnuncios();
+
+      imagensTemp = [];
+      atualizarPreview();
+      document.querySelectorAll('#formAdd input, #formAdd textarea').forEach(el => el.value = '');
+      alert("Anúncio publicado com sucesso!");
+    }
+
+    function excluirAnuncio(index) {
+      if (confirm("Excluir anúncio?")) {
+        anuncios.splice(index, 1);
+        localStorage.setItem('anuncios', JSON.stringify(anuncios));
+        renderizarAnuncios();
+      }
+    }
+
+    function logout() {
+      localStorage.removeItem('userLogged');
+      window.location.href = 'index.html';
+    }
+
+    renderizarAnuncios();
+  </script>
+</body>
+</html>
