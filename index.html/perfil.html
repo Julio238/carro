@@ -1,12 +1,15 @@
+
 <!DOCTYPE html>
 <html lang="pt-BR" class="scroll-smooth">
 <head>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="supabaseClient.js"></script>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Meu Perfil - Turbeiros Garage</title>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="supabaseClient.js"></script>
   <script src="https://cdn.tailwindcss.com"></script>
+
   <script>
     tailwind.config = {
       darkMode: 'class',
@@ -14,103 +17,150 @@
         extend: {
           colors: {
             'tuned-red': '#e63946',
-            'tuned-dark': '#1d1d1d',
+            'tuned-dark': '#1d1d1d'
           }
         }
       }
-    }
+    };
   </script>
 </head>
+
 <body class="bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-gray-100 min-h-screen flex flex-col">
 
-  <!-- Header Dinâmico -->
   <header class="bg-tuned-dark text-white py-4 shadow-lg sticky top-0 z-50">
     <div class="container mx-auto px-4 flex justify-between items-center">
       <a href="index.html" class="text-2xl font-bold">Turbeiros Garage</a>
-      <nav id="mainNav" class="hidden md:flex space-x-6 items-center">
-        <!-- Preenchido via JavaScript -->
-      </nav>
+      <nav id="mainNav" class="flex space-x-6 items-center"></nav>
     </div>
   </header>
 
   <main class="flex-grow container mx-auto px-4 py-12">
     <div class="max-w-5xl mx-auto">
 
-      <!-- Cabeçalho do Perfil -->
+      <!-- PERFIL -->
       <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-8 mb-10">
         <div class="flex flex-col md:flex-row items-center gap-6">
-          <div class="w-24 h-24 bg-tuned-red rounded-full flex items-center justify-center text-white text-5xl font-bold">
-            J
+
+          <div id="avatar"
+            class="w-24 h-24 bg-tuned-red rounded-full flex items-center justify-center text-white text-5xl font-bold">
+            U
           </div>
-          <div class="flex-1">
-            <h1 class="text-4xl font-bold" id="nomeUsuario">Julio</h1>
-            <p class="text-gray-600 dark:text-gray-400 mt-1" id="emailUsuario">julioqeu@gmail.com</p>
-            <p class="text-sm text-gray-500 mt-2">Membro desde 2026 • Curitiba, PR</p>
+
+          <div class="flex-1 text-center md:text-left">
+            <h1 class="text-4xl font-bold" id="nomeUsuario">Carregando...</h1>
+            <p class="text-gray-600 dark:text-gray-400 mt-1" id="emailUsuario"></p>
+            <p class="text-sm text-gray-500 mt-2" id="dadosMembro"></p>
           </div>
-          <div>
-            <button onclick="editarPerfil()" 
-                    class="bg-tuned-red hover:bg-red-700 text-white px-6 py-3 rounded-lg font-medium transition">
-              Editar Perfil
-            </button>
-          </div>
+
+          <button id="btnEditar"
+            class="bg-tuned-red hover:bg-red-700 text-white px-6 py-3 rounded-lg font-medium transition">
+            Editar Perfil
+          </button>
+
         </div>
       </div>
 
+      <!-- FORMULÁRIO DE EDIÇÃO -->
+      <section id="formEdicao"
+        class="hidden bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-8 mb-10">
+
+        <h2 class="text-2xl font-bold mb-6">Editar meus dados</h2>
+
+        <form id="perfilForm" class="space-y-4">
+
+          <div>
+            <label for="nome" class="block mb-1 text-sm font-medium">Nome completo</label>
+            <input id="nome" required maxlength="100"
+              class="w-full p-3 rounded-lg border dark:bg-gray-700 dark:border-gray-600">
+          </div>
+
+          <div>
+            <label for="telefone" class="block mb-1 text-sm font-medium">Telefone / WhatsApp</label>
+            <input id="telefone" maxlength="30"
+              class="w-full p-3 rounded-lg border dark:bg-gray-700 dark:border-gray-600">
+          </div>
+
+          <div>
+            <label for="cidade" class="block mb-1 text-sm font-medium">Cidade</label>
+            <input id="cidade" maxlength="100"
+              class="w-full p-3 rounded-lg border dark:bg-gray-700 dark:border-gray-600">
+          </div>
+
+          <div id="mensagemPerfil" class="text-sm hidden" role="alert"></div>
+
+          <div class="flex gap-3">
+            <button type="submit" id="btnSalvar"
+              class="bg-tuned-red hover:bg-red-700 text-white px-6 py-3 rounded-lg">
+              Salvar alterações
+            </button>
+
+            <button type="button" id="btnCancelar"
+              class="bg-gray-500 hover:bg-gray-600 text-white px-6 py-3 rounded-lg">
+              Cancelar
+            </button>
+          </div>
+
+        </form>
+      </section>
+
       <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
 
-        <!-- Meus Favoritos -->
+        <!-- FAVORITOS -->
         <section class="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-8">
           <div class="flex justify-between items-center mb-6">
             <h2 class="text-2xl font-bold">Meus Favoritos</h2>
-            <span class="text-sm text-gray-500">0 itens</span>
+            <span id="totalFavoritos" class="text-sm text-gray-500">0 itens</span>
           </div>
-          <div class="text-center py-16 text-gray-500 dark:text-gray-400">
-            <p class="text-2xl mb-4">❤️</p>
-            <p>Você ainda não salvou nenhum veículo como favorito.</p>
-            <p class="mt-2 text-sm">Explore os anúncios e clique no coração para salvar.</p>
+
+          <div id="listaFavoritos" class="space-y-4">
+            <p class="text-center py-10 text-gray-500">
+              Carregando favoritos...
+            </p>
           </div>
         </section>
 
-        <!-- Meus Anúncios -->
+        <!-- ANÚNCIOS -->
         <section class="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-8">
-          <div class="flex justify-between items-center mb-6">
-            <h2 class="text-2xl font-bold">Meus Anúncios</h2>
-          </div>
-          
-          <div class="text-center py-16 border border-dashed border-gray-300 dark:border-gray-600 rounded-xl">
+          <h2 class="text-2xl font-bold mb-6">Meus Anúncios</h2>
+
+          <div class="text-center py-12 border border-dashed border-gray-300 dark:border-gray-600 rounded-xl">
             <p class="text-3xl mb-4">📋</p>
-            <h3 class="text-xl font-medium mb-3">Você ainda não tem anúncios publicados</h3>
-            <p class="text-gray-600 dark:text-gray-400 max-w-sm mx-auto">
-              Apenas o administrador pode criar e publicar anúncios neste site.
+            <h3 class="text-xl font-medium mb-3">Anúncios da Turbeiros Garage</h3>
+            <p class="text-gray-600 dark:text-gray-400">
+              A publicação de veículos é controlada pelo administrador.
             </p>
-            <p class="mt-6 text-sm text-tuned-red">
-              Acesse a <strong>Área de Admin</strong> para adicionar novos veículos.
-            </p>
+            <a id="linkAdmin" href="admin.html"
+              class="hidden inline-block mt-6 text-tuned-red font-bold">
+              Acessar área administrativa
+            </a>
           </div>
         </section>
 
       </div>
 
-      <!-- Estatísticas rápidas -->
+      <!-- ESTATÍSTICAS -->
       <section class="mt-12 bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-8">
-        <h2 class="text-2xl font-bold mb-8 text-center">Sua Atividade no Turbeiros Garage</h2>
-        <div class="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
+        <h2 class="text-2xl font-bold mb-8 text-center">
+          Sua Atividade no Turbeiros Garage
+        </h2>
+
+        <div class="grid grid-cols-2 md:grid-cols-3 gap-8 text-center">
+
           <div>
-            <p class="text-4xl font-bold text-tuned-red">0</p>
-            <p class="text-sm text-gray-600 dark:text-gray-400 mt-2">Anúncios ativos</p>
-          </div>
-          <div>
-            <p class="text-4xl font-bold text-tuned-red">3</p>
+            <p class="text-4xl font-bold text-tuned-red" id="estatFavoritos">0</p>
             <p class="text-sm text-gray-600 dark:text-gray-400 mt-2">Favoritos salvos</p>
           </div>
+
           <div>
-            <p class="text-4xl font-bold text-tuned-red">12</p>
-            <p class="text-sm text-gray-600 dark:text-gray-400 mt-2">Mensagens recebidas</p>
+            <p class="text-4xl font-bold text-tuned-red" id="estatCadastro">-</p>
+            <p class="text-sm text-gray-600 dark:text-gray-400 mt-2">Ano de cadastro</p>
           </div>
+
           <div>
-            <p class="text-4xl font-bold text-tuned-red">Curitiba</p>
+            <p class="text-2xl font-bold text-tuned-red" id="estatCidade">-</p>
             <p class="text-sm text-gray-600 dark:text-gray-400 mt-2">Localização</p>
           </div>
+
         </div>
       </section>
 
@@ -119,47 +169,261 @@
 
   <footer class="bg-tuned-dark text-white py-10 text-center">
     <div class="container mx-auto px-4">
-      <p>© 2026 Turbeiros Garage – Marketplace especializado em carros modificados e preparados</p>
+      <p>© 2026 Turbeiros Garage - Marketplace especializado em carros modificados e preparados</p>
     </div>
   </footer>
 
   <script>
-    // ==================== HEADER DINÂMICO ====================
-    const user = JSON.parse(localStorage.getItem('userLogged'));
-    const nav = document.getElementById('mainNav');
+    const supabase = window.supabaseClient;
+    const ADMIN_EMAIL = "julioqeu@gmail.com";
 
-    if (user && user.loggedIn) {
-      let links = `<a href="perfil.html" class="text-tuned-red font-semibold">Perfil</a>`;
-      if (user.isAdmin) {
-        links += ` <a href="admin.html" class="text-green-400 hover:text-green-300 ml-4">Admin</a>`;
+    let usuarioAtual = null;
+    let perfilAtual = null;
+
+    const nav = document.getElementById("mainNav");
+    const formEdicao = document.getElementById("formEdicao");
+
+    function mostrarMensagem(texto, sucesso = false) {
+      const msg = document.getElementById("mensagemPerfil");
+      msg.textContent = texto;
+      msg.className = sucesso
+        ? "text-sm text-green-600"
+        : "text-sm text-red-600";
+    }
+
+    async function carregarPerfil() {
+      if (!supabase) {
+        window.location.href = "login.html";
+        return;
       }
-      nav.innerHTML = `
-        ${links}
-        <button onclick="logout()" class="bg-red-600 hover:bg-red-700 px-5 py-2 rounded-lg text-sm font-medium ml-4">
-          Sair
-        </button>
-      `;
 
-      // Preenche nome e email do usuário
-      document.getElementById('nomeUsuario').textContent = user.nome || "Usuário";
-      document.getElementById('emailUsuario').textContent = user.email || "";
-    } else {
-      // Se não estiver logado, redireciona para login
-      window.location.href = 'login.html';
-    }
+      try {
+        const { data: { user }, error } =
+          await supabase.auth.getUser();
 
-    function logout() {
-      if (confirm("Deseja realmente sair?")) {
-        localStorage.removeItem('userLogged');
-        if (window.supabase && typeof supabase !== 'undefined') supabase.auth.signOut();
-        window.location.href = 'index.html';
+        if (error || !user) {
+          window.location.href = "login.html";
+          return;
+        }
+
+        usuarioAtual = user;
+
+        const { data: perfil, error: perfilError } =
+          await supabase
+            .from("profiles")
+            .select("full_name, phone, city, role, created_at")
+            .eq("id", user.id)
+            .single();
+
+        if (perfilError) throw perfilError;
+
+        perfilAtual = perfil;
+
+        const nome = perfil.full_name || "Usuário";
+
+        document.getElementById("nomeUsuario").textContent = nome;
+        document.getElementById("emailUsuario").textContent = user.email || "";
+        document.getElementById("avatar").textContent =
+          nome.charAt(0).toUpperCase();
+
+        document.getElementById("dadosMembro").textContent =
+          "Membro desde " +
+          new Date(perfil.created_at).toLocaleDateString("pt-BR") +
+          (perfil.city ? " • " + perfil.city : "");
+
+        document.getElementById("nome").value = perfil.full_name || "";
+        document.getElementById("telefone").value = perfil.phone || "";
+        document.getElementById("cidade").value = perfil.city || "";
+
+        const { data: admin, error: adminError } =
+          await supabase.rpc("is_admin");
+
+        if (adminError) throw adminError;
+
+        nav.innerHTML = `
+          <a href="index.html" class="hover:text-tuned-red">Início</a>
+          <span class="text-tuned-red font-semibold">Perfil</span>
+        `;
+
+        if (
+          user.email?.toLowerCase() === ADMIN_EMAIL &&
+          admin === true
+        ) {
+          const link = document.getElementById("linkAdmin");
+          link.classList.remove("hidden");
+
+          const adminLink = document.createElement("a");
+          adminLink.href = "admin.html";
+          adminLink.textContent = "Admin";
+          adminLink.className = "text-green-400";
+          nav.appendChild(adminLink);
+        }
+
+        const sair = document.createElement("button");
+        sair.textContent = "Sair";
+        sair.className = "bg-red-600 px-4 py-2 rounded-lg";
+
+        sair.addEventListener("click", async () => {
+          await supabase.auth.signOut();
+          window.location.href = "index.html";
+        });
+
+        nav.appendChild(sair);
+
+        const ano = new Date(perfil.created_at).getFullYear();
+
+        document.getElementById("estatCadastro").textContent = ano;
+        document.getElementById("estatCidade").textContent =
+          perfil.city || "-";
+
+        await carregarFavoritos();
+
+      } catch (error) {
+        console.error("Erro ao carregar perfil:", error);
+        alert("Não foi possível carregar seu perfil. Verifique a configuração do banco.");
       }
     }
 
-    function editarPerfil() {
-      alert("Função de editar perfil será implementada em breve.");
-      // Aqui você pode abrir um modal ou redirecionar para uma página de edição
+    async function carregarFavoritos() {
+      const lista = document.getElementById("listaFavoritos");
+
+      const { data, error } = await supabase
+        .from("favorites")
+        .select(`
+          vehicle_id,
+          vehicles (
+            id,
+            brand,
+            model,
+            year,
+            price
+          )
+        `)
+        .eq("user_id", usuarioAtual.id);
+
+      if (error) {
+        console.error("Erro ao carregar favoritos:", error);
+        lista.textContent = "Não foi possível carregar os favoritos.";
+        return;
+      }
+
+      const favoritos = (data || []).filter(item => item.vehicles);
+
+      document.getElementById("totalFavoritos").textContent =
+        favoritos.length + " itens";
+
+      document.getElementById("estatFavoritos").textContent =
+        favoritos.length;
+
+      lista.innerHTML = "";
+
+      if (!favoritos.length) {
+        lista.innerHTML = `
+          <div class="text-center py-12 text-gray-500">
+            <p class="text-2xl mb-4">❤️</p>
+            <p>Você ainda não salvou nenhum veículo como favorito.</p>
+            <a href="index.html" class="inline-block mt-4 text-tuned-red font-bold">
+              Explorar veículos
+            </a>
+          </div>
+        `;
+        return;
+      }
+
+      favoritos.forEach(item => {
+        const veiculo = item.vehicles;
+        const link = document.createElement("a");
+
+        link.href = "anuncio.html?id=" + encodeURIComponent(veiculo.id);
+        link.className =
+          "block border border-gray-200 dark:border-gray-700 rounded-lg p-4 hover:border-red-500";
+
+        const titulo = document.createElement("p");
+        titulo.className = "font-bold";
+        titulo.textContent =
+          `${veiculo.brand} ${veiculo.model} ${veiculo.year || ""}`;
+
+        const preco = document.createElement("p");
+        preco.className = "text-tuned-red mt-1";
+        preco.textContent = Number(veiculo.price || 0)
+          .toLocaleString("pt-BR", {
+            style: "currency",
+            currency: "BRL"
+          });
+
+        link.appendChild(titulo);
+        link.appendChild(preco);
+        lista.appendChild(link);
+      });
     }
+
+    document.getElementById("btnEditar").addEventListener("click", () => {
+      formEdicao.classList.toggle("hidden");
+    });
+
+    document.getElementById("btnCancelar").addEventListener("click", () => {
+      document.getElementById("nome").value = perfilAtual.full_name || "";
+      document.getElementById("telefone").value = perfilAtual.phone || "";
+      document.getElementById("cidade").value = perfilAtual.city || "";
+      formEdicao.classList.add("hidden");
+    });
+
+    document.getElementById("perfilForm").addEventListener("submit", async (event) => {
+      event.preventDefault();
+
+      const botao = document.getElementById("btnSalvar");
+      botao.disabled = true;
+      botao.textContent = "Salvando...";
+
+      try {
+        const atualizacao = {
+          full_name: document.getElementById("nome").value.trim(),
+          phone: document.getElementById("telefone").value.trim(),
+          city: document.getElementById("cidade").value.trim()
+        };
+
+        if (!atualizacao.full_name) {
+          throw new Error("Informe seu nome.");
+        }
+
+        const { data, error } = await supabase
+          .from("profiles")
+          .update(atualizacao)
+          .eq("id", usuarioAtual.id)
+          .select("full_name, phone, city, role, created_at")
+          .single();
+
+        if (error) throw error;
+
+        perfilAtual = data;
+
+        mostrarMensagem("Perfil atualizado com sucesso!", true);
+        formEdicao.classList.add("hidden");
+
+        document.getElementById("nomeUsuario").textContent =
+          data.full_name;
+
+        document.getElementById("avatar").textContent =
+          data.full_name.charAt(0).toUpperCase();
+
+        document.getElementById("dadosMembro").textContent =
+          "Membro desde " +
+          new Date(data.created_at).toLocaleDateString("pt-BR") +
+          (data.city ? " • " + data.city : "");
+
+        document.getElementById("estatCidade").textContent =
+          data.city || "-";
+
+      } catch (error) {
+        mostrarMensagem(error.message || "Erro ao atualizar perfil.");
+      } finally {
+        botao.disabled = false;
+        botao.textContent = "Salvar alterações";
+      }
+    });
+
+    carregarPerfil();
   </script>
+
 </body>
 </html>
