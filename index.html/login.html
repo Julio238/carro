@@ -5,7 +5,7 @@
 <script src="supabaseClient.js"></script>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Login - TurbeirosBR</title>
+  <title>Login - Turbeiros Garage</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
     tailwind.config = { darkMode: 'class', theme: { extend: { colors: { 'tuned-red': '#e63946', 'tuned-dark': '#1d1d1d' } } } }
@@ -15,7 +15,7 @@
 
   <header class="bg-tuned-dark text-white py-4 shadow-lg sticky top-0 z-50">
     <div class="container mx-auto px-4 flex justify-between items-center">
-      <a href="index.html" class="text-2xl font-bold">Turbeiros<span class="text-tuned-red"></span>BR</a>
+      <a href="index.html" class="text-2xl font-bold">Turbeiros Garage</a>
     </div>
   </header>
 
@@ -46,44 +46,49 @@
   </main>
 
   <footer class="bg-tuned-dark text-white py-6 text-center">
-    <p>© 2026 TunedCarsBR</p>
+    <p>© 2026 Turbeiros Garage</p>
   </footer>
 
   <script>
-    document.getElementById('loginForm').addEventListener('submit', function(e) {
-      e.preventDefault();
-      const email = document.getElementById('email').value.trim();
-      const senha = document.getElementById('senha').value;
-      const msg = document.getElementById('mensagem');
+    const form = document.getElementById('loginForm');
+    const msg = document.getElementById('mensagem');
+    function showMessage(text, ok = false) {
+      msg.textContent = text;
+      msg.classList.remove('hidden', 'text-green-600', 'text-red-600');
+      msg.classList.add(ok ? 'text-green-600' : 'text-red-600');
+    }
 
-      if (email === "julioqeu@gmail.com" && senha === "senha") {
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const email = document.getElementById('email').value.trim().toLowerCase();
+      const senha = document.getElementById('senha').value;
+      const submit = form.querySelector('button[type="submit"]');
+      submit.disabled = true;
+      submit.textContent = 'Entrando...';
+
+      try {
+        const { data, error } = await supabase.auth.signInWithPassword({ email, password: senha });
+        if (error) throw error;
+        const user = data.user;
+        if (!user) throw new Error('Não foi possível validar sua conta.');
+
+        const nome = user.user_metadata?.nome || user.user_metadata?.full_name || email.split('@')[0];
         localStorage.setItem('userLogged', JSON.stringify({
           loggedIn: true,
-          nome: "Julio",
-          email: email,
-          isAdmin: true
+          id: user.id,
+          nome,
+          email: user.email,
+          isAdmin: user.email?.toLowerCase() === ADMIN_EMAIL
         }));
-        msg.textContent = "Bem-vindo, Administrador!";
-        msg.classList.add('text-green-600');
-        msg.classList.remove('hidden');
-        setTimeout(() => window.location.href = 'index.html', 1200);
-      } 
-      else if (email && senha) {
-        localStorage.setItem('userLogged', JSON.stringify({
-          loggedIn: true,
-          nome: email.split('@')[0],
-          email: email,
-          isAdmin: false
-        }));
-        msg.textContent = "Login realizado com sucesso!";
-        msg.classList.add('text-green-600');
-        msg.classList.remove('hidden');
-        setTimeout(() => window.location.href = 'index.html', 1200);
-      } 
-      else {
-        msg.textContent = "Email ou senha incorretos.";
-        msg.classList.add('text-red-600');
-        msg.classList.remove('hidden');
+        showMessage('Login realizado com sucesso!', true);
+        setTimeout(() => window.location.href = 'index.html', 700);
+      } catch (error) {
+        showMessage(error.message === 'Invalid login credentials'
+          ? 'E-mail ou senha incorretos. Se ainda não tem conta, faça seu cadastro.'
+          : (error.message || 'Não foi possível entrar. Verifique a configuração do sistema.'));
+      } finally {
+        submit.disabled = false;
+        submit.textContent = 'Entrar';
       }
     });
   </script>

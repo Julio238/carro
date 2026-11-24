@@ -5,7 +5,7 @@
 <script src="supabaseClient.js"></script>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Cadastro - TurbeirosBR</title>
+  <title>Cadastro - Turbeiros Garage</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
     tailwind.config = {
@@ -26,7 +26,7 @@
   <!-- Header Dinâmico -->
   <header class="bg-tuned-dark text-white py-4 shadow-lg sticky top-0 z-50">
     <div class="container mx-auto px-4 flex justify-between items-center">
-      <a href="index.html" class="text-2xl font-bold">Turbeiros<span class="text-tuned-red"></span>BR</a>
+      <a href="index.html" class="text-2xl font-bold">Turbeiros Garage</a>
       <nav id="mainNav" class="hidden md:flex space-x-6 items-center">
         <!-- Preenchido via JavaScript -->
       </nav>
@@ -89,59 +89,65 @@
   </main>
 
   <footer class="bg-tuned-dark text-white py-8 text-center">
-    <p>© 2026 TunedCarsBR – Marketplace de Carros Modificados</p>
+    <p>© 2026 Turbeiros Garage – Marketplace de Carros Modificados</p>
   </footer>
 
   <script>
-    // Header Dinâmico
-    const user = JSON.parse(localStorage.getItem('userLogged'));
     const nav = document.getElementById('mainNav');
+    nav.innerHTML = `
+      <a href="login.html" class="hover:text-tuned-red">Entrar</a>
+      <a href="cadastro.html" class="bg-tuned-red px-4 py-2 rounded hover:bg-red-700">Cadastrar</a>`;
 
-    if (user && user.loggedIn) {
-      let links = `<a href="perfil.html" class="hover:text-tuned-red font-medium">Perfil</a>`;
-      if (user.isAdmin) links += ` <a href="admin.html" class="text-green-400 ml-4">Admin</a>`;
-      nav.innerHTML = `${links} <button onclick="logout()" class="bg-red-600 hover:bg-red-700 px-4 py-2 rounded-lg text-sm ml-4">Sair</button>`;
-    } else {
-      nav.innerHTML = `
-        <a href="login.html" class="hover:text-tuned-red">Entrar</a>
-        <a href="cadastro.html" class="bg-tuned-red px-4 py-2 rounded hover:bg-red-700">Cadastrar</a>
-      `;
+    function showMessage(text, ok = false) {
+      const msg = document.getElementById('mensagem');
+      msg.textContent = text;
+      msg.classList.remove('hidden', 'text-green-600', 'text-red-600');
+      msg.classList.add(ok ? 'text-green-600' : 'text-red-600');
     }
 
-    function logout() {
-      localStorage.removeItem('userLogged');
-      window.location.href = 'index.html';
-    }
-
-    // Validação simples do formulário
-    document.getElementById('cadastroForm').addEventListener('submit', function(e) {
+    document.getElementById('cadastroForm').addEventListener('submit', async (e) => {
       e.preventDefault();
+      const nome = document.getElementById('nome').value.trim();
+      const email = document.getElementById('email').value.trim().toLowerCase();
+      const telefone = document.getElementById('telefone').value.trim();
+      const cidade = document.getElementById('cidade').value.trim();
       const senha = document.getElementById('senha').value;
       const confirmar = document.getElementById('confirmarSenha').value;
-      const msg = document.getElementById('mensagem');
+      const submit = e.currentTarget.querySelector('button[type="submit"]');
 
-      if (senha !== confirmar) {
-        msg.textContent = "As senhas não coincidem!";
-        msg.classList.add('text-red-600');
-        msg.classList.remove('hidden');
-        return;
+      if (senha !== confirmar) return showMessage('As senhas não coincidem!');
+      if (senha.length < 8) return showMessage('A senha deve ter pelo menos 8 caracteres!');
+
+      submit.disabled = true;
+      submit.textContent = 'Cadastrando...';
+      try {
+        const { data, error } = await supabase.auth.signUp({
+          email,
+          password: senha,
+          options: { data: { nome, telefone, cidade } }
+        });
+        if (error) throw error;
+
+        if (data.session && data.user) {
+          localStorage.setItem('userLogged', JSON.stringify({
+            loggedIn: true,
+            id: data.user.id,
+            nome,
+            email: data.user.email,
+            isAdmin: data.user.email?.toLowerCase() === ADMIN_EMAIL
+          }));
+          showMessage('Conta criada! Redirecionando...', true);
+          setTimeout(() => window.location.href = 'index.html', 900);
+        } else {
+          showMessage('Cadastro recebido! Confirme seu e-mail pelo link enviado para ativar a conta.', true);
+          setTimeout(() => window.location.href = 'login.html', 2500);
+        }
+      } catch (error) {
+        showMessage(error.message || 'Não foi possível concluir o cadastro.');
+      } finally {
+        submit.disabled = false;
+        submit.textContent = 'Cadastrar';
       }
-
-      if (senha.length < 8) {
-        msg.textContent = "A senha deve ter pelo menos 8 caracteres!";
-        msg.classList.add('text-red-600');
-        msg.classList.remove('hidden');
-        return;
-      }
-
-      msg.textContent = "Cadastro realizado com sucesso! Redirecionando...";
-      msg.classList.add('text-green-600');
-      msg.classList.remove('hidden');
-
-      // Simula cadastro e redireciona para login
-      setTimeout(() => {
-        window.location.href = 'login.html';
-      }, 1800);
     });
   </script>
 </body>

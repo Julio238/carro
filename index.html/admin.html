@@ -5,7 +5,7 @@
 <script src="supabaseClient.js"></script>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Admin - TurbeirosBR</title>
+  <title>Admin - Turbeiros Garage</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
     tailwind.config = { darkMode: 'class', theme: { extend: { colors: { 'tuned-red': '#e63946', 'tuned-dark': '#1d1d1d' } } } }
@@ -15,7 +15,7 @@
 
   <header class="bg-tuned-dark text-white py-4 shadow-lg sticky top-0 z-50">
     <div class="container mx-auto px-4 flex justify-between items-center">
-      <a href="index.html" class="text-2xl font-bold">Turbeiros<span class="text-tuned-red"></span>BR</a>
+      <a href="index.html" class="text-2xl font-bold">Turbeiros Garage</a>
       <div class="flex items-center gap-6">
         <span class="bg-green-600 px-3 py-1 rounded-full text-sm font-bold">ADMIN</span>
         <a href="index.html" class="hover:text-tuned-red">Ver Site</a>
@@ -88,10 +88,25 @@
   </section>
 
   <footer class="bg-tuned-dark text-white py-8 text-center">
-    <p>© 2026 TunedCarsBR – Área Administrativa</p>
+    <p>© 2026 Turbeiros Garage – Área Administrativa</p>
   </footer>
 
   <script>
+    (async function validarAdministrador() {
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user || user.email?.toLowerCase() !== ADMIN_EMAIL) {
+          alert('Acesso restrito ao administrador. Faça login com a conta autorizada.');
+          await supabase.auth.signOut();
+          localStorage.removeItem('userLogged');
+          window.location.replace('login.html');
+        }
+      } catch (_) {
+        localStorage.removeItem('userLogged');
+        window.location.replace('login.html');
+      }
+    })();
+
     let anuncios = JSON.parse(localStorage.getItem('anuncios')) || [];
     let imagensTemp = [];
 
@@ -182,6 +197,7 @@
 
     function logout() {
       localStorage.removeItem('userLogged');
+      if (window.supabase && typeof supabase !== 'undefined') supabase.auth.signOut();
       window.location.href = 'index.html';
     }
 

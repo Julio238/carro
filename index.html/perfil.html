@@ -5,7 +5,7 @@
 <script src="supabaseClient.js"></script>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Meu Perfil - TurbeirosBR</title>
+  <title>Meu Perfil - Turbeiros Garage</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
     tailwind.config = {
@@ -26,7 +26,7 @@
   <!-- Header Dinâmico -->
   <header class="bg-tuned-dark text-white py-4 shadow-lg sticky top-0 z-50">
     <div class="container mx-auto px-4 flex justify-between items-center">
-      <a href="index.html" class="text-2xl font-bold">Turbeiros<span class="text-tuned-red"></span>BR</a>
+      <a href="index.html" class="text-2xl font-bold">Turbeiros Garage</a>
       <nav id="mainNav" class="hidden md:flex space-x-6 items-center">
         <!-- Preenchido via JavaScript -->
       </nav>
@@ -93,7 +93,7 @@
 
       <!-- Estatísticas rápidas -->
       <section class="mt-12 bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-8">
-        <h2 class="text-2xl font-bold mb-8 text-center">Sua Atividade no TunedCarsBR</h2>
+        <h2 class="text-2xl font-bold mb-8 text-center">Sua Atividade no Turbeiros Garage</h2>
         <div class="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
           <div>
             <p class="text-4xl font-bold text-tuned-red">0</p>
@@ -119,7 +119,7 @@
 
   <footer class="bg-tuned-dark text-white py-10 text-center">
     <div class="container mx-auto px-4">
-      <p>© 2026 TunedCarsBR – Marketplace especializado em carros modificados e preparados</p>
+      <p>© 2026 Turbeiros Garage – Marketplace especializado em carros modificados e preparados</p>
     </div>
   </footer>
 
@@ -151,6 +151,7 @@
     function logout() {
       if (confirm("Deseja realmente sair?")) {
         localStorage.removeItem('userLogged');
+        if (window.supabase && typeof supabase !== 'undefined') supabase.auth.signOut();
         window.location.href = 'index.html';
       }
     }
