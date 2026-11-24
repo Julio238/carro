@@ -27,13 +27,13 @@
 
 <body class="bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-gray-100 min-h-screen flex flex-col">
 
-  <header class="bg-tuned-dark text-white py-4 shadow-lg sticky top-0 z-50">
+  <header class="bg-tuned-dark text-white py-4 shadow-lg">
     <div class="container mx-auto px-4 flex justify-between items-center">
       <a href="index.html" class="text-2xl font-bold">
         Turbeiros Garage
       </a>
 
-      <nav id="mainNav" class="flex space-x-6 items-center">
+      <nav>
         <a href="login.html" class="hover:text-tuned-red">Entrar</a>
       </nav>
     </div>
@@ -51,125 +51,78 @@
         Comece a comprar e vender carros modificados
       </p>
 
-      <form id="cadastroForm" class="space-y-6">
+      <form id="cadastroForm" class="space-y-5">
 
         <div>
           <label for="nome" class="block text-sm font-medium mb-1">
             Nome completo
           </label>
-
-          <input
-            type="text"
-            id="nome"
-            required
-            autocomplete="name"
+          <input type="text" id="nome" required autocomplete="name"
             placeholder="Seu nome"
-            class="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700"
-          >
+            class="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700">
         </div>
 
         <div>
           <label for="email" class="block text-sm font-medium mb-1">
             Email
           </label>
-
-          <input
-            type="email"
-            id="email"
-            required
-            autocomplete="email"
+          <input type="email" id="email" required autocomplete="email"
             placeholder="seuemail@gmail.com"
-            class="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700"
-          >
+            class="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700">
         </div>
 
         <div>
           <label for="telefone" class="block text-sm font-medium mb-1">
             Telefone / WhatsApp
           </label>
-
-          <input
-            type="tel"
-            id="telefone"
-            required
-            autocomplete="tel"
+          <input type="tel" id="telefone" required autocomplete="tel"
             placeholder="(41) 99999-9999"
-            class="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700"
-          >
+            class="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700">
         </div>
 
         <div>
           <label for="cidade" class="block text-sm font-medium mb-1">
             Cidade
           </label>
-
-          <input
-            type="text"
-            id="cidade"
-            required
-            autocomplete="address-level2"
+          <input type="text" id="cidade" required autocomplete="address-level2"
             placeholder="Sua cidade"
-            class="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700"
-          >
+            class="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700">
         </div>
 
         <div>
           <label for="senha" class="block text-sm font-medium mb-1">
             Senha
           </label>
-
-          <input
-            type="password"
-            id="senha"
-            required
-            minlength="8"
+          <input type="password" id="senha" required minlength="8"
             autocomplete="new-password"
             placeholder="Mínimo 8 caracteres"
-            class="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700"
-          >
+            class="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700">
         </div>
 
         <div>
           <label for="confirmarSenha" class="block text-sm font-medium mb-1">
             Confirmar senha
           </label>
-
-          <input
-            type="password"
-            id="confirmarSenha"
-            required
-            minlength="8"
+          <input type="password" id="confirmarSenha" required minlength="8"
             autocomplete="new-password"
             placeholder="Digite novamente"
-            class="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700"
-          >
+            class="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700">
         </div>
 
-        <div class="flex items-center">
-          <input
-            type="checkbox"
-            id="termos"
-            required
-            class="h-4 w-4 text-tuned-red"
-          >
-
+        <div class="flex items-start">
+          <input type="checkbox" id="termos" required
+            class="h-4 w-4 mt-1 text-tuned-red">
           <label for="termos" class="ml-2 text-sm">
             Aceito os termos de uso e política de privacidade
           </label>
         </div>
 
-        <div
-          id="mensagem"
-          role="alert"
-          aria-live="polite"
-          class="text-center text-sm font-medium hidden"
-        ></div>
+        <div id="mensagem" role="alert" aria-live="polite"
+          class="hidden text-center text-sm font-medium p-3 rounded-lg">
+        </div>
 
-        <button
-          type="submit"
-          id="btnCadastrar"
-          class="w-full bg-tuned-red hover:bg-red-700 text-white font-bold py-4 rounded-lg transition"
-        >
+        <button type="submit" id="btnCadastrar"
+          class="w-full bg-tuned-red hover:bg-red-700 disabled:opacity-60 disabled:cursor-not-allowed text-white font-bold py-4 rounded-lg transition">
           Cadastrar
         </button>
 
@@ -190,62 +143,66 @@
   </footer>
 
   <script>
-    const supabase = window.supabaseClient;
+    const db = window.supabaseClient;
 
-    const form = document.getElementById("cadastroForm");
-    const mensagem = document.getElementById("mensagem");
-    const botao = document.getElementById("btnCadastrar");
+    const form = document.getElementById('cadastroForm');
+    const mensagem = document.getElementById('mensagem');
+    const botao = document.getElementById('btnCadastrar');
 
-    function mostrarMensagem(texto, sucesso = false) {
+    function mostrarMensagem(texto, tipo = 'erro') {
       mensagem.textContent = texto;
+      mensagem.classList.remove('hidden');
 
-      mensagem.className = sucesso
-        ? "text-center text-sm font-medium text-green-600"
-        : "text-center text-sm font-medium text-red-600";
+      mensagem.className =
+        'text-center text-sm font-medium p-3 rounded-lg ' +
+        (tipo === 'sucesso'
+          ? 'bg-green-100 text-green-700'
+          : 'bg-red-100 text-red-700');
     }
 
-    form.addEventListener("submit", async (event) => {
+    form.addEventListener('submit', async function(event) {
       event.preventDefault();
 
-      if (!supabase) {
-        mostrarMensagem("Não foi possível conectar ao Supabase.");
+      if (!db) {
+        mostrarMensagem('Conexão com o Supabase não encontrada. Verifique o supabaseClient.js.');
         return;
       }
 
-      const nome = document.getElementById("nome").value.trim();
-      const email = document.getElementById("email")
-        .value.trim().toLowerCase();
-      const telefone = document.getElementById("telefone")
-        .value.trim();
-      const cidade = document.getElementById("cidade")
-        .value.trim();
-      const senha = document.getElementById("senha").value;
-      const confirmar = document.getElementById("confirmarSenha").value;
+      const nome = document.getElementById('nome').value.trim();
+      const email = document.getElementById('email').value.trim().toLowerCase();
+      const telefone = document.getElementById('telefone').value.trim();
+      const cidade = document.getElementById('cidade').value.trim();
+      const senha = document.getElementById('senha').value;
+      const confirmar = document.getElementById('confirmarSenha').value;
+
+      if (!nome || !email || !telefone || !cidade) {
+        mostrarMensagem('Preencha todos os campos.');
+        return;
+      }
 
       if (senha.length < 8) {
-        mostrarMensagem("A senha precisa ter pelo menos 8 caracteres.");
+        mostrarMensagem('A senha precisa ter pelo menos 8 caracteres.');
         return;
       }
 
       if (senha !== confirmar) {
-        mostrarMensagem("As senhas não coincidem.");
+        mostrarMensagem('As senhas não coincidem.');
         return;
       }
 
-      if (!document.getElementById("termos").checked) {
-        mostrarMensagem("Você precisa aceitar os termos para continuar.");
+      if (!document.getElementById('termos').checked) {
+        mostrarMensagem('Você precisa aceitar os termos para continuar.');
         return;
       }
 
       botao.disabled = true;
-      botao.textContent = "Cadastrando...";
-      mensagem.className = "hidden";
+      botao.textContent = 'Criando sua conta...';
+      mensagem.classList.add('hidden');
 
       try {
-        const { data, error } = await supabase.auth.signUp({
+        const { data, error } = await db.auth.signUp({
           email: email,
           password: senha,
-
           options: {
             data: {
               full_name: nome,
@@ -255,40 +212,42 @@
           }
         });
 
-        if (error) throw error;
+        if (error) {
+          throw error;
+        }
 
         if (data.session) {
           mostrarMensagem(
-            "Conta criada com sucesso! Redirecionando...",
-            true
+            'Conta criada! Você já está conectado. Entrando no site...',
+            'sucesso'
           );
 
-          setTimeout(() => {
-            window.location.href = "index.html";
-          }, 1500);
+          botao.textContent = 'Cadastro realizado!';
 
-        } else {
-          mostrarMensagem(
-            "Cadastro recebido! Verifique seu email e clique no link de confirmação para ativar sua conta.",
-            true
-          );
-
-          botao.textContent = "Cadastro realizado";
-
-          setTimeout(() => {
-            window.location.href = "login.html";
-          }, 4000);
+          window.location.replace('index.html');
+          return;
         }
 
-      } catch (error) {
-        console.error("Erro no cadastro:", error);
-
         mostrarMensagem(
-          error.message || "Não foi possível concluir o cadastro."
+          'Sua conta foi criada, mas o Supabase ainda exige confirmação do e-mail. É necessário desativar essa exigência nas configurações para entrar automaticamente.'
         );
 
         botao.disabled = false;
-        botao.textContent = "Cadastrar";
+        botao.textContent = 'Tentar novamente';
+
+      } catch (error) {
+        console.error('Erro no cadastro:', error);
+
+        let texto = error.message || 'Não foi possível concluir o cadastro.';
+
+        if (error.message?.toLowerCase().includes('already registered')) {
+          texto = 'Este e-mail já possui uma conta. Tente entrar pela página de login.';
+        }
+
+        mostrarMensagem(texto);
+
+        botao.disabled = false;
+        botao.textContent = 'Cadastrar';
       }
     });
   </script>

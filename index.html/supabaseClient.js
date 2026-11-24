@@ -1,10 +1,10 @@
 
-const SUPABASE_URL = "https://jwujbtebbapliuwbuupi.supabase.co";
+const SUPABASE_URL = "https://jwujbtebbapluiwbuupi.supabase.co";
 
 const SUPABASE_ANON_KEY = "sb_publishable_Be2mCfgonxjjprcIXN_4QA_1UVVz-K9";
 
 if (!window.supabase) {
-  throw new Error("Biblioteca do Supabase não carregada.");
+  throw new Error("Biblioteca Supabase não carregada.");
 }
 
 window.supabaseClient = window.supabase.createClient(
@@ -12,4 +12,4 @@ window.supabaseClient = window.supabase.createClient(
   SUPABASE_ANON_KEY
 );
 
-const ADMIN_EMAIL = "julioqeu@gmail.com";
+window.ADMIN_EMAIL = "julioqeu@gmail.com";
