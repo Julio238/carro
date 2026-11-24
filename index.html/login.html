@@ -1,47 +1,114 @@
+
 <!DOCTYPE html>
 <html lang="pt-BR" class="scroll-smooth">
 <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Entrar - Turbeiros Garage</title>
+
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="supabaseClient.js"></script>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Login - Turbeiros Garage</title>
+  <script src="supabaseClient.js"></script>
   <script src="https://cdn.tailwindcss.com"></script>
+
   <script>
-    tailwind.config = { darkMode: 'class', theme: { extend: { colors: { 'tuned-red': '#e63946', 'tuned-dark': '#1d1d1d' } } } }
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            'tuned-red': '#e63946',
+            'tuned-dark': '#1d1d1d'
+          }
+        }
+      }
+    };
   </script>
 </head>
+
 <body class="bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-gray-100 min-h-screen flex flex-col">
 
-  <header class="bg-tuned-dark text-white py-4 shadow-lg sticky top-0 z-50">
-    <div class="container mx-auto px-4 flex justify-between items-center">
-      <a href="index.html" class="text-2xl font-bold">Turbeiros Garage</a>
+  <header class="bg-tuned-dark text-white py-4 shadow-lg">
+    <div class="container mx-auto px-4">
+      <a href="index.html" class="text-2xl font-bold">
+        Turbeiros Garage
+      </a>
     </div>
   </header>
 
   <main class="flex-grow flex items-center justify-center py-12 px-4">
+
     <div class="w-full max-w-md bg-white dark:bg-gray-800 rounded-2xl shadow-2xl p-8 border border-gray-200 dark:border-gray-700">
-      <h1 class="text-3xl font-bold text-center mb-2">Entrar na conta</h1>
-      <p class="text-center text-gray-600 dark:text-gray-400 mb-8">Acesse sua área pessoal</p>
+
+      <h1 class="text-3xl font-bold text-center mb-2">
+        Entrar na conta
+      </h1>
+
+      <p class="text-center text-gray-600 dark:text-gray-400 mb-8">
+        Acesse sua área pessoal
+      </p>
 
       <form id="loginForm" class="space-y-6">
+
         <div>
-          <label for="email" class="block text-sm font-medium mb-1">Email</label>
-          <input type="email" id="email" required placeholder="@gmail.com" class="w-full px-4 py-3 rounded-lg border">
-        </div>
-        <div>
-          <label for="senha" class="block text-sm font-medium mb-1">Senha</label>
-          <input type="password" id="senha" required placeholder="senha" class="w-full px-4 py-3 rounded-lg border">
+          <label for="email" class="block text-sm font-medium mb-1">
+            Email
+          </label>
+
+          <input
+            type="email"
+            id="email"
+            required
+            autocomplete="email"
+            placeholder="seuemail@gmail.com"
+            class="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+          >
         </div>
 
-        <div id="mensagem" class="text-center text-sm font-medium hidden"></div>
+        <div>
+          <label for="senha" class="block text-sm font-medium mb-1">
+            Senha
+          </label>
 
-        <button type="submit" class="w-full bg-tuned-red hover:bg-red-700 text-white font-bold py-4 rounded-lg">Entrar</button>
+          <input
+            type="password"
+            id="senha"
+            required
+            autocomplete="current-password"
+            placeholder="Sua senha"
+            class="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+          >
+        </div>
+
+        <div
+          id="mensagem"
+          role="alert"
+          aria-live="polite"
+          class="text-center text-sm font-medium hidden"
+        ></div>
+
+        <button
+          type="submit"
+          id="btnEntrar"
+          class="w-full bg-tuned-red hover:bg-red-700 text-white font-bold py-4 rounded-lg transition"
+        >
+          Entrar
+        </button>
+
       </form>
 
       <p class="mt-6 text-center text-sm">
-        Não tem conta? <a href="cadastro.html" class="text-tuned-red hover:underline">Cadastrar</a>
+        Não tem conta?
+        <a href="cadastro.html" class="text-tuned-red hover:underline font-medium">
+          Cadastre-se
+        </a>
       </p>
+
+      <p class="mt-4 text-center text-sm">
+        <a href="index.html" class="text-gray-500 hover:underline">
+          Voltar para a página inicial
+        </a>
+      </p>
+
     </div>
   </main>
 
@@ -50,47 +117,87 @@
   </footer>
 
   <script>
-    const form = document.getElementById('loginForm');
-    const msg = document.getElementById('mensagem');
-    function showMessage(text, ok = false) {
-      msg.textContent = text;
-      msg.classList.remove('hidden', 'text-green-600', 'text-red-600');
-      msg.classList.add(ok ? 'text-green-600' : 'text-red-600');
+    const supabase = window.supabaseClient;
+    const ADMIN_EMAIL = "julioqeu@gmail.com";
+
+    const form = document.getElementById("loginForm");
+    const mensagem = document.getElementById("mensagem");
+    const botao = document.getElementById("btnEntrar");
+
+    function mostrarMensagem(texto, sucesso = false) {
+      mensagem.textContent = texto;
+      mensagem.className = sucesso
+        ? "text-center text-sm font-medium text-green-600"
+        : "text-center text-sm font-medium text-red-600";
     }
 
-    form.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const email = document.getElementById('email').value.trim().toLowerCase();
-      const senha = document.getElementById('senha').value;
-      const submit = form.querySelector('button[type="submit"]');
-      submit.disabled = true;
-      submit.textContent = 'Entrando...';
+    form.addEventListener("submit", async (event) => {
+      event.preventDefault();
+
+      if (!supabase) {
+        mostrarMensagem("Não foi possível conectar ao Supabase.");
+        return;
+      }
+
+      const email = document.getElementById("email")
+        .value.trim().toLowerCase();
+
+      const senha = document.getElementById("senha").value;
+
+      botao.disabled = true;
+      botao.textContent = "Verificando...";
+      mensagem.className = "hidden";
 
       try {
-        const { data, error } = await supabase.auth.signInWithPassword({ email, password: senha });
-        if (error) throw error;
-        const user = data.user;
-        if (!user) throw new Error('Não foi possível validar sua conta.');
+        const { data, error } = await supabase.auth.signInWithPassword({
+          email,
+          password: senha
+        });
 
-        const nome = user.user_metadata?.nome || user.user_metadata?.full_name || email.split('@')[0];
-        localStorage.setItem('userLogged', JSON.stringify({
-          loggedIn: true,
-          id: user.id,
-          nome,
-          email: user.email,
-          isAdmin: user.email?.toLowerCase() === ADMIN_EMAIL
-        }));
-        showMessage('Login realizado com sucesso!', true);
-        setTimeout(() => window.location.href = 'index.html', 700);
+        if (error) {
+          throw error;
+        }
+
+        const usuario = data.user;
+
+        if (!usuario) {
+          throw new Error("Não foi possível identificar sua conta.");
+        }
+
+        // A autorização administrativa é confirmada no servidor.
+        if (usuario.email?.toLowerCase() === ADMIN_EMAIL) {
+          const { data: adminConfirmado, error: adminError } =
+            await supabase.rpc("is_admin");
+
+          if (adminError) {
+            throw new Error(
+              "Login realizado, mas não foi possível verificar a permissão administrativa. Confira a configuração do banco."
+            );
+          }
+
+          if (adminConfirmado === true) {
+            mostrarMensagem("Bem-vindo ao painel administrativo!", true);
+            window.location.href = "admin.html";
+            return;
+          }
+        }
+
+        mostrarMensagem("Login realizado com sucesso!", true);
+        window.location.href = "index.html";
+
       } catch (error) {
-        showMessage(error.message === 'Invalid login credentials'
-          ? 'E-mail ou senha incorretos. Se ainda não tem conta, faça seu cadastro.'
-          : (error.message || 'Não foi possível entrar. Verifique a configuração do sistema.'));
+        console.error("Erro no login:", error);
+
+        mostrarMensagem(
+          error.message || "Email ou senha incorretos."
+        );
+
       } finally {
-        submit.disabled = false;
-        submit.textContent = 'Entrar';
+        botao.disabled = false;
+        botao.textContent = "Entrar";
       }
     });
   </script>
+
 </body>
 </html>
