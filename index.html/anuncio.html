@@ -1,55 +1,479 @@
+
 <!DOCTYPE html>
 <html lang="pt-BR" class="scroll-smooth">
 <head>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="supabaseClient.js"></script>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Anúncio - Turbeiros Garage</title>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="supabaseClient.js"></script>
+
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
-    tailwind.config = { darkMode: 'class', theme: { extend: { colors: { 'tuned-red': '#e63946' } } } }
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            'tuned-red': '#e63946',
+            'tuned-dark': '#171717'
+          }
+        }
+      }
+    }
   </script>
 </head>
-<body class="bg-gray-100 dark:bg-gray-900">
+
+<body class="bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-gray-100">
 
   <header class="bg-tuned-dark text-white py-4 shadow-lg sticky top-0 z-50">
     <div class="container mx-auto px-4 flex justify-between items-center">
-      <a href="index.html" class="text-2xl font-bold">Turbeiros Garage</a>
-      <nav id="mainNav" class="hidden md:flex space-x-6 items-center"></nav>
+      <a href="index.html" class="text-2xl font-bold">
+        Turbeiros Garage
+      </a>
+
+      <nav id="mainNav" class="flex items-center gap-4">
+        <a href="index.html" class="hover:text-tuned-red">Início</a>
+        <a href="login.html" class="hover:text-tuned-red">Entrar</a>
+      </nav>
     </div>
   </header>
 
   <main class="container mx-auto px-4 py-10">
-    <div id="conteudoAnuncio" class="max-w-5xl mx-auto bg-white dark:bg-gray-800 rounded-2xl shadow-2xl overflow-hidden">
-      <!-- JS preenche aqui -->
+
+    <div id="mensagem"
+      class="max-w-5xl mx-auto mb-5 text-center text-gray-600 dark:text-gray-300">
+      Carregando anúncio...
     </div>
+
+    <div id="conteudoAnuncio"
+      class="max-w-5xl mx-auto bg-white dark:bg-gray-800 rounded-2xl shadow-2xl overflow-hidden hidden">
+    </div>
+
   </main>
 
+  <footer class="bg-tuned-dark text-gray-300 text-center py-6 mt-10">
+    <p>© 2026 Turbeiros Garage. Todos os direitos reservados.</p>
+  </footer>
+
   <script>
-    // Header dinâmico
-    const user = JSON.parse(localStorage.getItem('userLogged'));
+    const db = window.supabaseClient;
+
+    const mensagem = document.getElementById('mensagem');
+    const conteudo = document.getElementById('conteudoAnuncio');
     const nav = document.getElementById('mainNav');
-    if (user && user.loggedIn) {
-      let links = `<a href="perfil.html" class="hover:text-tuned-red">Perfil</a>`;
-      if (user.isAdmin) links += ` <a href="admin.html" class="text-green-400">Admin</a>`;
-      nav.innerHTML = `${links} <button onclick="logout()" class="bg-red-600 px-4 py-2 rounded-lg">Sair</button>`;
-    } else {
-      nav.innerHTML = `<a href="login.html" class="hover:text-tuned-red">Entrar</a><a href="cadastro.html" class="bg-tuned-red px-4 py-2 rounded">Cadastrar</a>`;
-    }
-    function logout() { localStorage.removeItem('userLogged'); location.href = 'index.html'; }
 
-    // Galeria
-    const id = parseInt(new URLSearchParams(location.search).get('id'));
-    const anuncios = JSON.parse(localStorage.getItem('anuncios')) || [];
-    const anuncio = anuncios[id];
+    const params = new URLSearchParams(window.location.search);
+    const vehicleId = params.get('id');
 
-    if (!anuncio) {
-      document.getElementById('conteudoAnuncio').innerHTML = `<p class="p-10 text-center text-red-600 text-2xl">Anúncio não encontrado</p>`;
-    } else {
-      // ... (código da galeria que enviei anteriormente)
-      // Se precisar, posso reenviar a versão completa da galeria
+    let currentUser = null;
+    let isAdmin = false;
+    let isFavorite = false;
+    let vehicle = null;
+    let imagens = [];
+
+    function escapar(valor) {
+      return String(valor ?? '').replace(/[&<>"']/g, caractere => ({
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#039;'
+      })[caractere]);
     }
+
+    function formatarPreco(valor) {
+      const numero = Number(valor);
+
+      if (!Number.isFinite(numero)) {
+        return 'Consulte o preço';
+      }
+
+      return numero.toLocaleString('pt-BR', {
+        style: 'currency',
+        currency: 'BRL'
+      });
+    }
+
+    function formatarAno(valor) {
+      return valor ? escapar(valor) : 'Não informado';
+    }
+
+    function mostrarMensagem(texto, erro = false) {
+      mensagem.textContent = texto;
+      mensagem.className = erro
+        ? 'max-w-5xl mx-auto mb-5 text-center text-red-600 font-semibold'
+        : 'max-w-5xl mx-auto mb-5 text-center text-gray-600 dark:text-gray-300';
+    }
+
+    async function carregarUsuario() {
+      const { data, error } = await db.auth.getUser();
+
+      if (error) {
+        console.error('Erro ao verificar usuário:', error);
+      }
+
+      currentUser = data?.user || null;
+
+      if (currentUser) {
+        const { data: adminData, error: adminError } =
+          await db.rpc('is_admin');
+
+        if (!adminError) {
+          isAdmin = adminData === true;
+        }
+      }
+
+      atualizarMenu();
+    }
+
+    function atualizarMenu() {
+      if (currentUser) {
+        nav.innerHTML = `
+          <a href="index.html" class="hover:text-tuned-red">Início</a>
+          <a href="perfil.html" class="hover:text-tuned-red">Meu perfil</a>
+          ${isAdmin
+            ? '<a href="admin.html" class="text-green-400">Admin</a>'
+            : ''
+          }
+          <button id="btnSair"
+            class="bg-red-600 hover:bg-red-700 px-4 py-2 rounded-lg">
+            Sair
+          </button>
+        `;
+
+        document.getElementById('btnSair')
+          .addEventListener('click', sair);
+      } else {
+        nav.innerHTML = `
+          <a href="index.html" class="hover:text-tuned-red">Início</a>
+          <a href="login.html" class="hover:text-tuned-red">Entrar</a>
+          <a href="cadastro.html"
+            class="bg-tuned-red hover:bg-red-700 px-4 py-2 rounded-lg">
+            Cadastrar
+          </a>
+        `;
+      }
+    }
+
+    async function sair() {
+      const { error } = await db.auth.signOut();
+
+      if (error) {
+        alert('Não foi possível sair da conta: ' + error.message);
+        return;
+      }
+
+      window.location.href = 'index.html';
+    }
+
+    async function carregarAnuncio() {
+      if (!vehicleId) {
+        mostrarMensagem('Anúncio não encontrado. Identificador ausente.', true);
+        return;
+      }
+
+      const { data, error } = await db
+        .from('vehicles')
+        .select(`
+          id,
+          brand,
+          model,
+          year,
+          price,
+          description,
+          status,
+          created_at,
+          vehicle_images (
+            id,
+            image_url,
+            position
+          )
+        `)
+        .eq('id', vehicleId)
+        .maybeSingle();
+
+      if (error) {
+        console.error('Erro ao carregar anúncio:', error);
+        mostrarMensagem(
+          'Não foi possível carregar o anúncio. Verifique se o banco de dados foi configurado.',
+          true
+        );
+        return;
+      }
+
+      if (!data) {
+        mostrarMensagem(
+          'Anúncio não encontrado ou você não tem permissão para visualizá-lo.',
+          true
+        );
+        return;
+      }
+
+      if (data.status !== 'published' && !isAdmin) {
+        mostrarMensagem('Este anúncio não está disponível.', true);
+        return;
+      }
+
+      vehicle = data;
+
+      imagens = (data.vehicle_images || [])
+        .filter(item => item.image_url)
+        .sort((a, b) => (a.position || 0) - (b.position || 0));
+
+      await verificarFavorito();
+      renderizarAnuncio();
+    }
+
+    async function verificarFavorito() {
+      isFavorite = false;
+
+      if (!currentUser || !vehicle) return;
+
+      const { data, error } = await db
+        .from('favorites')
+        .select('vehicle_id')
+        .eq('user_id', currentUser.id)
+        .eq('vehicle_id', vehicle.id)
+        .maybeSingle();
+
+      if (error) {
+        console.error('Erro ao verificar favorito:', error);
+        return;
+      }
+
+      isFavorite = !!data;
+    }
+
+    function renderizarAnuncio() {
+      const primeiraImagem = imagens.length
+        ? imagens[0].image_url
+        : '';
+
+      const marca = escapar(vehicle.brand);
+      const modelo = escapar(vehicle.model);
+      const descricao = escapar(
+        vehicle.description || 'Nenhuma descrição foi informada para este veículo.'
+      );
+
+      const statusTexto = vehicle.status === 'published'
+        ? 'Disponível'
+        : vehicle.status === 'sold'
+          ? 'Vendido'
+          : 'Não publicado';
+
+      conteudo.innerHTML = `
+        <div class="p-5 md:p-8">
+
+          <div class="flex flex-col md:flex-row justify-between gap-4 mb-6">
+            <div>
+              <p class="text-sm text-gray-500 dark:text-gray-400 mb-2">
+                Turbeiros Garage / Anúncio
+              </p>
+
+              <h1 class="text-3xl md:text-4xl font-bold">
+                ${marca} ${modelo}
+              </h1>
+
+              <p class="text-sm text-gray-500 dark:text-gray-400 mt-2">
+                ${statusTexto}
+              </p>
+            </div>
+
+            <div class="text-left md:text-right">
+              <p class="text-sm text-gray-500 dark:text-gray-400">
+                Valor anunciado
+              </p>
+
+              <p class="text-3xl font-bold text-tuned-red">
+                ${formatarPreco(vehicle.price)}
+              </p>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+            <div>
+              <div class="bg-gray-100 dark:bg-gray-700 rounded-xl overflow-hidden">
+                ${
+                  primeiraImagem
+                    ? `<img id="imagemPrincipal"
+                        src="${escapar(primeiraImagem)}"
+                        alt="${marca} ${modelo}"
+                        class="w-full h-80 md:h-96 object-cover"
+                        onerror="this.style.display='none'; document.getElementById('imagemIndisponivel').classList.remove('hidden');">`
+                    : ''
+                }
+
+                <div id="imagemIndisponivel"
+                  class="${primeiraImagem ? 'hidden' : ''} h-80 md:h-96 flex items-center justify-center text-gray-500">
+                  <div class="text-center">
+                    <div class="text-5xl mb-3">🚗</div>
+                    <p>Foto não disponível</p>
+                  </div>
+                </div>
+              </div>
+
+              ${
+                imagens.length > 1
+                  ? `<div class="grid grid-cols-4 gap-3 mt-3">
+                      ${imagens.map((imagem, index) => `
+                        <button type="button"
+                          class="miniatura rounded-lg overflow-hidden border-2 ${index === 0 ? 'border-tuned-red' : 'border-transparent'}"
+                          data-index="${index}">
+                          <img src="${escapar(imagem.image_url)}"
+                            alt="Foto ${index + 1}"
+                            class="w-full h-20 object-cover"
+                            onerror="this.style.opacity='0.3'">
+                        </button>
+                      `).join('')}
+                    </div>`
+                  : ''
+              }
+            </div>
+
+            <div class="flex flex-col">
+
+              <h2 class="text-2xl font-bold mb-5">
+                Informações do veículo
+              </h2>
+
+              <div class="grid grid-cols-2 gap-4 mb-6">
+
+                <div class="bg-gray-100 dark:bg-gray-700 p-4 rounded-xl">
+                  <p class="text-sm text-gray-500 dark:text-gray-300">Marca</p>
+                  <p class="font-bold text-lg">${marca}</p>
+                </div>
+
+                <div class="bg-gray-100 dark:bg-gray-700 p-4 rounded-xl">
+                  <p class="text-sm text-gray-500 dark:text-gray-300">Modelo</p>
+                  <p class="font-bold text-lg">${modelo}</p>
+                </div>
+
+                <div class="bg-gray-100 dark:bg-gray-700 p-4 rounded-xl">
+                  <p class="text-sm text-gray-500 dark:text-gray-300">Ano</p>
+                  <p class="font-bold text-lg">${formatarAno(vehicle.year)}</p>
+                </div>
+
+                <div class="bg-gray-100 dark:bg-gray-700 p-4 rounded-xl">
+                  <p class="text-sm text-gray-500 dark:text-gray-300">Preço</p>
+                  <p class="font-bold text-lg text-tuned-red">
+                    ${formatarPreco(vehicle.price)}
+                  </p>
+                </div>
+
+              </div>
+
+              <h2 class="text-xl font-bold mb-3">Descrição</h2>
+
+              <p class="text-gray-700 dark:text-gray-300 leading-relaxed whitespace-pre-line mb-6">${descricao}</p>
+
+              <div class="mt-auto flex flex-col gap-3">
+
+                <button id="btnFavorito"
+                  class="w-full border-2 border-tuned-red text-tuned-red hover:bg-tuned-red hover:text-white font-bold py-3 px-5 rounded-xl transition">
+                  ${isFavorite ? '♥ Remover dos favoritos' : '♡ Adicionar aos favoritos'}
+                </button>
+
+                <a href="index.html"
+                  class="w-full text-center bg-gray-800 hover:bg-gray-700 text-white font-bold py-3 px-5 rounded-xl">
+                  Voltar aos anúncios
+                </a>
+
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+
+      mensagem.textContent = '';
+      conteudo.classList.remove('hidden');
+
+      document.getElementById('btnFavorito')
+        .addEventListener('click', alternarFavorito);
+
+      document.querySelectorAll('.miniatura').forEach(botao => {
+        botao.addEventListener('click', () => {
+          const index = Number(botao.dataset.index);
+          trocarImagem(index);
+        });
+      });
+    }
+
+    function trocarImagem(index) {
+      if (!imagens[index]) return;
+
+      const principal = document.getElementById('imagemPrincipal');
+      if (principal) {
+        principal.src = imagens[index].image_url;
+      }
+
+      document.querySelectorAll('.miniatura').forEach(botao => {
+        const ativo = Number(botao.dataset.index) === index;
+
+        botao.classList.toggle('border-tuned-red', ativo);
+        botao.classList.toggle('border-transparent', !ativo);
+      });
+    }
+
+    async function alternarFavorito() {
+      if (!currentUser) {
+        alert('Entre na sua conta para adicionar este veículo aos favoritos.');
+        window.location.href = 'login.html';
+        return;
+      }
+
+      const botao = document.getElementById('btnFavorito');
+      botao.disabled = true;
+      botao.textContent = 'Aguarde...';
+
+      let error = null;
+
+      if (isFavorite) {
+        const resultado = await db
+          .from('favorites')
+          .delete()
+          .eq('user_id', currentUser.id)
+          .eq('vehicle_id', vehicle.id);
+
+        error = resultado.error;
+      } else {
+        const resultado = await db
+          .from('favorites')
+          .insert({
+            user_id: currentUser.id,
+            vehicle_id: vehicle.id
+          });
+
+        error = resultado.error;
+      }
+
+      if (error) {
+        console.error('Erro ao atualizar favorito:', error);
+        alert('Não foi possível atualizar os favoritos: ' + error.message);
+      } else {
+        isFavorite = !isFavorite;
+      }
+
+      botao.disabled = false;
+      botao.textContent = isFavorite
+        ? '♥ Remover dos favoritos'
+        : '♡ Adicionar aos favoritos';
+    }
+
+    async function iniciarPagina() {
+      if (!db) {
+        mostrarMensagem('Conexão com o Supabase não encontrada.', true);
+        return;
+      }
+
+      await carregarUsuario();
+      await carregarAnuncio();
+    }
+
+    iniciarPagina();
   </script>
+
 </body>
 </html>
