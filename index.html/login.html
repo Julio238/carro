@@ -117,8 +117,9 @@
   </footer>
 
   <script>
-    const supabase = window.supabaseClient;
-    const ADMIN_EMAIL = "julioqeu@gmail.com";
+    // Usa o cliente já criado em supabaseClient.js.
+    // Não redeclara "supabase" nem "ADMIN_EMAIL".
+    const db = window.supabaseClient;
 
     const form = document.getElementById("loginForm");
     const mensagem = document.getElementById("mensagem");
@@ -134,7 +135,7 @@
     form.addEventListener("submit", async (event) => {
       event.preventDefault();
 
-      if (!supabase) {
+      if (!db) {
         mostrarMensagem("Não foi possível conectar ao Supabase.");
         return;
       }
@@ -149,8 +150,8 @@
       mensagem.className = "hidden";
 
       try {
-        const { data, error } = await supabase.auth.signInWithPassword({
-          email,
+        const { data, error } = await db.auth.signInWithPassword({
+          email: email,
           password: senha
         });
 
@@ -164,25 +165,28 @@
           throw new Error("Não foi possível identificar sua conta.");
         }
 
-        // A autorização administrativa é confirmada no servidor.
-        if (usuario.email?.toLowerCase() === ADMIN_EMAIL) {
+        // Verifica a permissão administrativa no banco.
+        if (usuario.email?.toLowerCase() === "julioqeu@gmail.com") {
+
           const { data: adminConfirmado, error: adminError } =
-            await supabase.rpc("is_admin");
+            await db.rpc("is_admin");
 
           if (adminError) {
             throw new Error(
-              "Login realizado, mas não foi possível verificar a permissão administrativa. Confira a configuração do banco."
+              "Login realizado, mas não foi possível verificar a permissão de administrador."
             );
           }
 
           if (adminConfirmado === true) {
             mostrarMensagem("Bem-vindo ao painel administrativo!", true);
+
             window.location.href = "admin.html";
             return;
           }
         }
 
         mostrarMensagem("Login realizado com sucesso!", true);
+
         window.location.href = "index.html";
 
       } catch (error) {
