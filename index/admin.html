@@ -1,0 +1,1475 @@
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#030712">
+  <meta name="description" content="Painel administrativo do Turbeiros Garage.">
+  <title>Painel Administrativo - Turbeiros Garage</title>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="supabaseClient.js"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <style>
+    * { box-sizing: border-box; }
+
+    body {
+      background: #f3f4f6;
+      color: #1f2937;
+      overflow-x: hidden;
+      font-family: Arial, Helvetica, sans-serif;
+    }
+
+    .cabecalho {
+      background: #030712;
+      color: white;
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      box-shadow: 0 4px 18px rgba(0,0,0,.18);
+    }
+
+    .cabecalho-conteudo {
+      max-width: 1200px;
+      margin: auto;
+      padding: 15px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 18px;
+    }
+
+    .marca-site {
+      font-size: 24px;
+      font-weight: 900;
+      letter-spacing: -1px;
+      line-height: 1.2;
+      white-space: nowrap;
+    }
+
+    .marca-site span { color: #dc2626; }
+
+    .subtitulo-site {
+      color: #9ca3af;
+      font-size: 12px;
+      margin-top: 4px;
+    }
+
+    .menu-cabecalho {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .link-menu {
+      color: #e5e7eb;
+      text-decoration: none;
+      font-weight: 700;
+      font-size: 13px;
+      padding: 11px 15px;
+      border-radius: 9px;
+      transition: .2s;
+      border: 1px solid transparent;
+      cursor: pointer;
+      background: transparent;
+    }
+
+    .link-menu:hover {
+      background: #1f2937;
+      color: white;
+    }
+
+    .link-menu.admin {
+      background: #1f2937;
+      border-color: #374151;
+      color: #fca5a5;
+    }
+
+    .link-menu.propostas {
+      background: #991b1b;
+      color: white;
+    }
+
+    .link-menu.propostas:hover {
+      background: #b91c1c;
+    }
+
+    .link-menu.sair {
+      background: #dc2626;
+      color: white;
+    }
+
+    .link-menu.sair:hover { background: #b91c1c; }
+
+    .conteudo-principal {
+      max-width: 1200px;
+      margin: auto;
+      padding: 30px 20px 55px;
+    }
+
+    .cartao-painel {
+      background: white;
+      border: 1px solid #e5e7eb;
+      border-radius: 16px;
+      box-shadow: 0 4px 16px rgba(15,23,42,.045);
+    }
+
+    .cartao-veiculo {
+      min-width: 0;
+      overflow: hidden;
+      transition: transform .2s, box-shadow .2s;
+    }
+
+    .cartao-veiculo:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 25px rgba(15,23,42,.09);
+    }
+
+    .campo {
+      width: 100%;
+      min-width: 0;
+      border: 1px solid #d1d5db;
+      border-radius: 10px;
+      padding: 12px 13px;
+      background: white;
+      outline: none;
+      font-size: 16px;
+      transition: .2s;
+    }
+
+    .campo:focus {
+      border-color: #dc2626;
+      box-shadow: 0 0 0 3px #fee2e2;
+    }
+
+    textarea.campo { resize: vertical; }
+
+    .botao {
+      border-radius: 10px;
+      padding: 12px 18px;
+      font-weight: 700;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      text-decoration: none;
+      border: none;
+      transition: .2s;
+      min-height: 44px;
+    }
+
+    .botao:disabled {
+      opacity: .6;
+      cursor: wait;
+    }
+
+    .foto-miniatura {
+      width: 110px;
+      height: 100px;
+      object-fit: cover;
+      border-radius: 9px;
+      border: 1px solid #d1d5db;
+      background: #f3f4f6;
+    }
+
+    .area-fotos {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .titulo-secao {
+      font-size: 21px;
+      font-weight: 900;
+      color: #111827;
+    }
+
+    .separador {
+      height: 1px;
+      background: #e5e7eb;
+      margin: 22px 0;
+    }
+
+    .atalho-propostas {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 20px 22px;
+      border-radius: 15px;
+      background: #111827;
+      color: white;
+      border: 1px solid #374151;
+      text-decoration: none;
+      transition: .2s;
+    }
+
+    .atalho-propostas:hover {
+      background: #1f2937;
+      transform: translateY(-2px);
+    }
+
+    .atalho-icone {
+      width: 48px;
+      height: 48px;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 12px;
+      background: #991b1b;
+      font-size: 23px;
+    }
+
+    @media (max-width: 640px) {
+      .cabecalho-conteudo {
+        flex-direction: column;
+        justify-content: center;
+        gap: 12px;
+        padding: 13px 10px;
+      }
+
+      .marca-container {
+        width: 100%;
+        text-align: center;
+      }
+
+      .marca-site { font-size: 21px; }
+
+      .menu-cabecalho {
+        width: 100%;
+        justify-content: center;
+        gap: 6px;
+      }
+
+      .link-menu {
+        font-size: 12px;
+        padding: 10px 11px;
+      }
+
+      .conteudo-principal {
+        padding: 20px 12px 40px;
+      }
+
+      .cartao-painel {
+        padding: 16px !important;
+        border-radius: 13px;
+      }
+
+      .foto-miniatura {
+        width: 95px;
+        height: 90px;
+      }
+
+      .botao {
+        padding: 12px 14px;
+        font-size: 14px;
+      }
+
+      .botoes-formulario {
+        display: flex;
+        flex-direction: column;
+      }
+
+      .botoes-formulario .botao { width: 100%; }
+
+      .botoes-veiculo {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+      }
+
+      .botoes-veiculo .botao {
+        width: 100%;
+        padding: 10px 8px;
+        font-size: 13px;
+      }
+
+      .titulo-secao { font-size: 20px; }
+
+      .atalho-propostas {
+        padding: 16px;
+        align-items: flex-start;
+      }
+
+      .atalho-propostas .botao {
+        width: 100%;
+        margin-top: 12px;
+      }
+
+      .atalho-conteudo {
+        flex-direction: column;
+        align-items: stretch;
+      }
+    }
+  </style>
+</head>
+
+<body class="min-h-screen">
+
+<header class="cabecalho">
+  <div class="cabecalho-conteudo">
+
+    <div class="marca-container">
+      <a href="index.html" class="no-underline text-white">
+        <h1 class="marca-site">
+          TURBEIROS <span>GARAGE</span>
+        </h1>
+      </a>
+      <p class="subtitulo-site">Central de administração</p>
+    </div>
+
+    <nav class="menu-cabecalho">
+      <a href="index.html" class="link-menu">Início</a>
+
+      <span class="link-menu admin">Administração</span>
+
+      <a href="propostas.html" class="link-menu propostas">
+        Propostas de Venda
+      </a>
+
+      <button id="btnSair" class="link-menu sair">
+        Sair
+      </button>
+    </nav>
+
+  </div>
+</header>
+
+<main id="carregando" class="max-w-6xl mx-auto p-6 text-center">
+  Verificando acesso administrativo...
+</main>
+
+<main id="painel" class="hidden conteudo-principal">
+
+  <section class="mb-7">
+    <div class="flex flex-wrap items-center justify-between gap-4">
+      <div>
+        <p class="text-sm font-bold text-red-600 uppercase tracking-wider">
+          Área restrita
+        </p>
+        <h2 class="text-2xl md:text-3xl font-black text-gray-900 mt-1">
+          Painel Administrativo
+        </h2>
+        <p class="text-gray-500 mt-2">
+          Gerencie os anúncios e as propostas de veículos do Turbeiros Garage.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <a href="propostas.html" class="atalho-propostas mb-7">
+    <div class="flex items-center gap-4">
+      <div class="atalho-icone">📋</div>
+      <div>
+        <h3 class="font-black text-lg">Propostas de Venda</h3>
+        <p class="text-gray-300 text-sm mt-1">
+          Visualize, aprove ou rejeite as propostas enviadas pelos usuários.
+        </p>
+      </div>
+    </div>
+    <span class="text-white font-bold text-sm whitespace-nowrap">
+      Acessar →
+    </span>
+  </a>
+
+  <div id="mensagem" class="hidden mb-6 rounded-xl p-4 text-sm"></div>
+
+  <section id="secaoFormulario" class="cartao-painel p-5 md:p-7 mb-10">
+
+    <div class="mb-6">
+      <p class="text-xs font-bold text-red-600 uppercase tracking-wider">
+        Gerenciamento de veículos
+      </p>
+      <h3 id="tituloFormulario" class="text-xl md:text-2xl font-black mt-1">
+        Cadastrar novo veículo
+      </h3>
+      <p class="text-sm text-gray-500 mt-2">
+        Preencha as informações e adicione as fotos do anúncio.
+      </p>
+    </div>
+
+    <form id="formVeiculo" class="space-y-5">
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+        <div>
+          <label class="block font-semibold mb-2" for="marca">Marca *</label>
+          <input class="campo" id="marca" type="text" required placeholder="Ex.: Volkswagen">
+        </div>
+
+        <div>
+          <label class="block font-semibold mb-2" for="modelo">Modelo *</label>
+          <input class="campo" id="modelo" type="text" required placeholder="Ex.: Gol GTI">
+        </div>
+
+        <div>
+          <label class="block font-semibold mb-2" for="ano">Ano</label>
+          <input class="campo" id="ano" type="number" min="1886" max="2100" placeholder="Ex.: 1994">
+        </div>
+
+        <div>
+          <label class="block font-semibold mb-2" for="preco">Preço (R$)</label>
+          <input class="campo" id="preco" type="number" min="0" step="0.01" placeholder="Ex.: 45000">
+        </div>
+      </div>
+
+      <div>
+        <label class="block font-semibold mb-2" for="descricao">Descrição do veículo</label>
+        <textarea class="campo" id="descricao" rows="5"
+          placeholder="Conte os detalhes do veículo..."></textarea>
+      </div>
+
+      <div class="border border-gray-200 rounded-xl p-4 md:p-5">
+
+        <h4 class="font-bold text-lg mb-2">Fotos do veículo</h4>
+
+        <p class="text-sm text-gray-600 mb-3">
+          Selecione uma foto, confira a prévia e confirme. Depois poderá adicionar outra.
+        </p>
+
+        <div class="bg-gray-50 rounded-lg p-3 mb-4">
+          <p class="font-bold text-sm">
+            Quantidade de fotos:
+            <span id="contadorFotos" class="text-red-600">0</span>
+          </p>
+          <p id="avisoQuantidade" class="text-sm mt-1"></p>
+        </div>
+
+        <input
+          id="fotoUnica"
+          type="file"
+          accept="image/jpeg,image/png,image/webp,image/gif"
+          capture="environment"
+          class="hidden"
+        >
+
+        <button
+          id="btnEscolherFoto"
+          type="button"
+          class="botao bg-gray-800 text-white hover:bg-gray-700 w-full md:w-auto"
+        >
+          + Selecionar uma foto
+        </button>
+
+        <div id="areaPrevia" class="hidden mt-5 border border-gray-200 rounded-xl p-3">
+          <p class="font-semibold mb-3">Confira esta foto antes de adicionar:</p>
+
+          <img
+            id="imagemPrevia"
+            src=""
+            alt="Prévia da foto selecionada"
+            class="w-full max-w-sm max-h-64 object-contain rounded-lg bg-gray-100"
+          >
+
+          <div class="flex flex-wrap gap-2 mt-4">
+            <button
+              id="btnConfirmarFoto"
+              type="button"
+              class="botao bg-green-600 text-white hover:bg-green-700"
+            >
+              Confirmar foto
+            </button>
+
+            <button
+              id="btnDescartarFoto"
+              type="button"
+              class="botao bg-gray-200 text-gray-800 hover:bg-gray-300"
+            >
+              Escolher outra
+            </button>
+          </div>
+        </div>
+
+        <div class="mt-6">
+          <p class="font-semibold mb-3">Fotos adicionadas ao anúncio:</p>
+          <div id="listaFotosSelecionadas" class="area-fotos"></div>
+          <p id="semFotosSelecionadas" class="text-sm text-gray-500">
+            Nenhuma foto adicionada ainda.
+          </p>
+        </div>
+
+        <div id="fotosAtuais" class="hidden mt-6 border-t pt-5">
+          <p class="font-semibold mb-3">
+            Fotos já cadastradas neste anúncio:
+          </p>
+
+          <div id="listaFotosAtuais" class="area-fotos"></div>
+
+          <p class="text-xs text-gray-500 mt-3">
+            Para excluir uma foto, clique em "Excluir foto".
+            A exclusão será efetivada somente ao salvar as alterações.
+          </p>
+        </div>
+
+        <p class="text-xs text-gray-500 mt-5">
+          Formatos aceitos: JPG, PNG, WEBP e GIF. Máximo de 10 MB por foto.
+          Não há limite de quantidade de fotos.
+        </p>
+
+      </div>
+
+      <div>
+        <label class="block font-semibold mb-2" for="status">Status do anúncio</label>
+        <select class="campo" id="status">
+          <option value="published">Publicado no site</option>
+          <option value="draft">Rascunho (não aparece no site)</option>
+          <option value="sold">Vendido</option>
+          <option value="archived">Arquivado</option>
+        </select>
+      </div>
+
+      <div class="flex flex-wrap gap-3 botoes-formulario">
+        <button id="btnSalvar" type="submit"
+          class="botao bg-red-600 text-white hover:bg-red-700">
+          Cadastrar veículo
+        </button>
+
+        <button id="btnCancelar" type="button"
+          class="botao bg-gray-200 text-gray-800 hover:bg-gray-300 hidden">
+          Cancelar edição
+        </button>
+      </div>
+
+    </form>
+  </section>
+
+  <section>
+    <div class="flex flex-wrap items-center justify-between gap-3 mb-5">
+      <div>
+        <p class="text-xs font-bold text-red-600 uppercase tracking-wider">
+          Estoque do site
+        </p>
+        <h3 class="titulo-secao mt-1">Veículos cadastrados</h3>
+        <p class="text-sm text-gray-500 mt-1">
+          Anúncios armazenados no Supabase.
+        </p>
+      </div>
+
+      <button id="btnAtualizar"
+        class="botao bg-gray-900 text-white hover:bg-gray-700 w-full sm:w-auto">
+        ↻ Atualizar lista
+      </button>
+    </div>
+
+    <div id="listaVeiculos" class="grid grid-cols-1 md:grid-cols-2 gap-5">
+      <p class="text-gray-500">Carregando anúncios...</p>
+    </div>
+  </section>
+
+</main>
+
+<script>
+  const db = window.supabaseClient;
+
+  const carregando = document.getElementById("carregando");
+  const painel = document.getElementById("painel");
+  const mensagem = document.getElementById("mensagem");
+  const formVeiculo = document.getElementById("formVeiculo");
+  const btnSalvar = document.getElementById("btnSalvar");
+  const btnCancelar = document.getElementById("btnCancelar");
+  const listaVeiculos = document.getElementById("listaVeiculos");
+
+  const fotoUnica = document.getElementById("fotoUnica");
+  const btnEscolherFoto = document.getElementById("btnEscolherFoto");
+  const areaPrevia = document.getElementById("areaPrevia");
+  const imagemPrevia = document.getElementById("imagemPrevia");
+  const btnConfirmarFoto = document.getElementById("btnConfirmarFoto");
+  const btnDescartarFoto = document.getElementById("btnDescartarFoto");
+
+  let veiculoEmEdicao = null;
+  let fotosDoVeiculo = [];
+  let fotosSelecionadas = [];
+  let fotosRemovidas = [];
+  let fotoPendente = null;
+
+  const LIMITE_FOTO = 10 * 1024 * 1024;
+  const MINIMO_FOTOS = 4;
+
+  function mostrarMensagem(texto, tipo = "sucesso") {
+    mensagem.textContent = texto;
+    mensagem.className = "mb-6 rounded-xl p-4 text-sm";
+
+    if (tipo === "erro") {
+      mensagem.classList.add("bg-red-100", "text-red-800");
+    } else if (tipo === "aviso") {
+      mensagem.classList.add("bg-yellow-100", "text-yellow-800");
+    } else {
+      mensagem.classList.add("bg-green-100", "text-green-800");
+    }
+
+    mensagem.classList.remove("hidden");
+    mensagem.scrollIntoView({ behavior: "smooth", block: "nearest" });
+  }
+
+  function criarElemento(tag, classe, texto) {
+    const elemento = document.createElement(tag);
+    if (classe) elemento.className = classe;
+    if (texto !== undefined) elemento.textContent = texto;
+    return elemento;
+  }
+
+  function formatarPreco(valor) {
+    if (valor === null || valor === undefined || valor === "") {
+      return "Preço sob consulta";
+    }
+
+    return Number(valor).toLocaleString("pt-BR", {
+      style: "currency",
+      currency: "BRL"
+    });
+  }
+
+  function obterCaminhoStorage(url) {
+    try {
+      const endereco = new URL(url);
+      const marcador = "/storage/v1/object/public/vehicle-images/";
+      const posicao = endereco.pathname.indexOf(marcador);
+
+      if (posicao === -1) return null;
+
+      return decodeURIComponent(
+        endereco.pathname.substring(posicao + marcador.length)
+      );
+    } catch {
+      return null;
+    }
+  }
+
+  function quantidadeTotalFotos() {
+    return fotosDoVeiculo.length + fotosSelecionadas.length;
+  }
+
+  function atualizarContadorFotos() {
+    const total = quantidadeTotalFotos();
+    const status = document.getElementById("status").value;
+
+    document.getElementById("contadorFotos").textContent = total;
+
+    const aviso = document.getElementById("avisoQuantidade");
+
+    if (status === "published") {
+      if (total < MINIMO_FOTOS) {
+        aviso.textContent =
+          "Anúncio publicado exige 4 fotos. Faltam " +
+          (MINIMO_FOTOS - total) + " foto(s).";
+
+        aviso.className = "text-sm text-red-600 mt-1";
+      } else {
+        aviso.textContent =
+          "Mínimo de 4 fotos atingido. Anúncio pronto para publicação.";
+
+        aviso.className = "text-sm text-green-700 mt-1";
+      }
+    } else {
+      aviso.textContent =
+        "Este status permite salvar com qualquer quantidade de fotos, inclusive nenhuma.";
+
+      aviso.className = "text-sm text-blue-700 mt-1";
+    }
+  }
+
+  function renderizarFotosSelecionadas() {
+    const lista = document.getElementById("listaFotosSelecionadas");
+    const semFotos = document.getElementById("semFotosSelecionadas");
+
+    lista.replaceChildren();
+    semFotos.classList.toggle("hidden", fotosSelecionadas.length > 0);
+
+    fotosSelecionadas.forEach((item, indice) => {
+      const bloco = criarElemento("div", "border rounded-xl p-2 bg-white");
+
+      const imagem = document.createElement("img");
+      imagem.src = item.previewUrl;
+      imagem.alt = "Foto selecionada " + (indice + 1);
+      imagem.className = "foto-miniatura";
+
+      const legenda = criarElemento(
+        "p", "text-xs text-center mt-1 text-gray-600",
+        "Foto nova " + (indice + 1)
+      );
+
+      const remover = criarElemento(
+        "button",
+        "w-full mt-2 text-xs font-bold text-red-600 hover:text-red-800",
+        "Remover"
+      );
+
+      remover.type = "button";
+
+      remover.addEventListener("click", () => {
+        URL.revokeObjectURL(item.previewUrl);
+        fotosSelecionadas.splice(indice, 1);
+        renderizarFotosSelecionadas();
+        atualizarContadorFotos();
+      });
+
+      bloco.append(imagem, legenda, remover);
+      lista.appendChild(bloco);
+    });
+
+    atualizarContadorFotos();
+  }
+
+  function renderizarFotosAtuais() {
+    const area = document.getElementById("fotosAtuais");
+    const lista = document.getElementById("listaFotosAtuais");
+
+    lista.replaceChildren();
+
+    if (!fotosDoVeiculo.length) {
+      area.classList.add("hidden");
+      atualizarContadorFotos();
+      return;
+    }
+
+    area.classList.remove("hidden");
+
+    fotosDoVeiculo.forEach((foto, indice) => {
+      const bloco = criarElemento("div", "border rounded-xl p-2 bg-white");
+
+      const imagem = document.createElement("img");
+      imagem.src = foto.image_url;
+      imagem.alt = "Foto cadastrada " + (indice + 1);
+      imagem.className = "foto-miniatura";
+
+      const legenda = criarElemento(
+        "p", "text-xs text-center mt-1 text-gray-600",
+        "Foto cadastrada " + (indice + 1)
+      );
+
+      const excluir = criarElemento(
+        "button",
+        "w-full mt-2 text-xs font-bold text-red-600 hover:text-red-800",
+        "Excluir foto"
+      );
+
+      excluir.type = "button";
+
+      excluir.addEventListener("click", () => {
+        const confirmar = confirm(
+          "Deseja marcar esta foto para exclusão? A alteração será aplicada quando você salvar o anúncio."
+        );
+
+        if (!confirmar) return;
+
+        fotosRemovidas.push(foto);
+        fotosDoVeiculo.splice(indice, 1);
+
+        renderizarFotosAtuais();
+        atualizarContadorFotos();
+
+        mostrarMensagem(
+          "Foto marcada para exclusão. Clique em Salvar alterações para confirmar.",
+          "aviso"
+        );
+      });
+
+      bloco.append(imagem, legenda, excluir);
+      lista.appendChild(bloco);
+    });
+
+    atualizarContadorFotos();
+  }
+
+  function descartarFotoPendente() {
+    if (fotoPendente?.previewUrl) {
+      URL.revokeObjectURL(fotoPendente.previewUrl);
+    }
+
+    fotoPendente = null;
+    fotoUnica.value = "";
+    imagemPrevia.src = "";
+    areaPrevia.classList.add("hidden");
+  }
+
+  function limparFotosSelecionadas() {
+    fotosSelecionadas.forEach(item => {
+      URL.revokeObjectURL(item.previewUrl);
+    });
+
+    fotosSelecionadas = [];
+    descartarFotoPendente();
+    renderizarFotosSelecionadas();
+  }
+
+  async function verificarAdministrador() {
+    try {
+      if (!db) {
+        throw new Error("Cliente Supabase não foi carregado.");
+      }
+
+      const { data: sessaoData, error: sessaoErro } =
+        await db.auth.getSession();
+
+      if (sessaoErro) throw sessaoErro;
+
+      if (!sessaoData.session?.user) {
+        window.location.replace("login.html");
+        return;
+      }
+
+      const { data: adminConfirmado, error: adminErro } =
+        await db.rpc("is_admin");
+
+      if (adminErro) throw adminErro;
+
+      if (adminConfirmado !== true) {
+        await db.auth.signOut();
+        window.location.replace("login.html");
+        return;
+      }
+
+      carregando.classList.add("hidden");
+      painel.classList.remove("hidden");
+
+      await carregarVeiculos();
+
+    } catch (erro) {
+      console.error(erro);
+      carregando.textContent =
+        "Não foi possível verificar o acesso: " + erro.message;
+    }
+  }
+
+  async function carregarVeiculos() {
+    listaVeiculos.replaceChildren(
+      criarElemento("p", "text-gray-500", "Carregando anúncios...")
+    );
+
+    const { data, error } = await db
+      .from("vehicles")
+      .select(`
+        id,
+        brand,
+        model,
+        year,
+        price,
+        description,
+        status,
+        created_at,
+        vehicle_images (
+          id,
+          image_url,
+          position
+        )
+      `)
+      .order("created_at", { ascending: false });
+
+    if (error) {
+      console.error(error);
+
+      listaVeiculos.replaceChildren(
+        criarElemento(
+          "p",
+          "text-red-600",
+          "Erro ao carregar anúncios: " + error.message
+        )
+      );
+
+      return;
+    }
+
+    listaVeiculos.replaceChildren();
+
+    if (!data || data.length === 0) {
+      listaVeiculos.appendChild(
+        criarElemento("p", "text-gray-500", "Nenhum veículo cadastrado ainda.")
+      );
+      return;
+    }
+
+    data.forEach(veiculo => {
+      const card = criarElemento(
+        "article",
+        "cartao-painel cartao-veiculo"
+      );
+
+      const fotos = (veiculo.vehicle_images || [])
+        .slice()
+        .sort((a, b) => (a.position || 0) - (b.position || 0));
+
+      if (fotos.length > 0) {
+        const imagem = document.createElement("img");
+        imagem.src = fotos[0].image_url;
+        imagem.alt = veiculo.brand + " " + veiculo.model;
+        imagem.className = "w-full h-52 object-cover";
+        imagem.loading = "lazy";
+        imagem.onerror = () => imagem.remove();
+        card.appendChild(imagem);
+      } else {
+        card.appendChild(
+          criarElemento(
+            "div",
+            "w-full h-36 bg-gray-100 flex items-center justify-center text-gray-400",
+            "Sem foto"
+          )
+        );
+      }
+
+      const conteudo = criarElemento("div", "p-5");
+
+      conteudo.appendChild(
+        criarElemento(
+          "h4",
+          "text-lg font-bold break-words",
+          veiculo.brand + " " + veiculo.model
+        )
+      );
+
+      conteudo.appendChild(
+        criarElemento(
+          "p",
+          "text-gray-600 text-sm mt-1",
+          (veiculo.year || "Ano não informado") +
+          " • " + formatarPreco(veiculo.price)
+        )
+      );
+
+      conteudo.appendChild(
+        criarElemento(
+          "p",
+          "text-sm text-gray-500 mt-2",
+          fotos.length + " foto(s) cadastrada(s)"
+        )
+      );
+
+      const statusNomes = {
+        published: "Publicado",
+        draft: "Rascunho",
+        sold: "Vendido",
+        archived: "Arquivado"
+      };
+
+      const statusClasse = veiculo.status === "published"
+        ? "bg-green-100 text-green-800"
+        : veiculo.status === "sold"
+          ? "bg-blue-100 text-blue-800"
+          : veiculo.status === "archived"
+            ? "bg-gray-200 text-gray-700"
+            : "bg-yellow-100 text-yellow-800";
+
+      conteudo.appendChild(
+        criarElemento(
+          "span",
+          "inline-block mt-3 px-3 py-1 rounded-full text-xs font-bold " + statusClasse,
+          statusNomes[veiculo.status] || veiculo.status
+        )
+      );
+
+      if (veiculo.description) {
+        conteudo.appendChild(
+          criarElemento(
+            "p",
+            "text-gray-600 text-sm mt-3 whitespace-pre-line break-words",
+            veiculo.description
+          )
+        );
+      }
+
+      const rodape = criarElemento(
+        "div",
+        "flex flex-wrap gap-2 mt-5 botoes-veiculo"
+      );
+
+      const editar = criarElemento(
+        "button",
+        "botao bg-blue-600 text-white hover:bg-blue-700",
+        "Editar"
+      );
+
+      editar.type = "button";
+      editar.addEventListener("click", () => iniciarEdicao(veiculo));
+
+      const excluir = criarElemento(
+        "button",
+        "botao bg-red-600 text-white hover:bg-red-700",
+        "Excluir anúncio"
+      );
+
+      excluir.type = "button";
+      excluir.addEventListener("click", () => excluirVeiculo(veiculo.id));
+
+      rodape.append(editar, excluir);
+      conteudo.appendChild(rodape);
+      card.appendChild(conteudo);
+      listaVeiculos.appendChild(card);
+    });
+  }
+
+  function iniciarEdicao(veiculo) {
+    limparFotosSelecionadas();
+
+    veiculoEmEdicao = veiculo.id;
+    fotosRemovidas = [];
+
+    document.getElementById("marca").value = veiculo.brand || "";
+    document.getElementById("modelo").value = veiculo.model || "";
+    document.getElementById("ano").value = veiculo.year ?? "";
+    document.getElementById("preco").value = veiculo.price ?? "";
+    document.getElementById("descricao").value = veiculo.description || "";
+    document.getElementById("status").value = veiculo.status || "published";
+
+    fotosDoVeiculo = (veiculo.vehicle_images || [])
+      .slice()
+      .sort((a, b) => (a.position || 0) - (b.position || 0));
+
+    document.getElementById("tituloFormulario").textContent =
+      "Editar veículo: " + veiculo.brand + " " + veiculo.model;
+
+    btnSalvar.textContent = "Salvar alterações";
+    btnCancelar.classList.remove("hidden");
+
+    renderizarFotosAtuais();
+    atualizarContadorFotos();
+
+    document.getElementById("secaoFormulario").scrollIntoView({
+      behavior: "smooth"
+    });
+  }
+
+  function cancelarEdicao() {
+    limparFotosSelecionadas();
+
+    veiculoEmEdicao = null;
+    fotosDoVeiculo = [];
+    fotosRemovidas = [];
+
+    formVeiculo.reset();
+
+    document.getElementById("tituloFormulario").textContent =
+      "Cadastrar novo veículo";
+
+    document.getElementById("fotosAtuais").classList.add("hidden");
+    document.getElementById("listaFotosAtuais").replaceChildren();
+
+    btnSalvar.textContent = "Cadastrar veículo";
+    btnCancelar.classList.add("hidden");
+
+    atualizarContadorFotos();
+  }
+
+  async function enviarFotos(arquivos, usuarioId, veiculoId) {
+    const registros = [];
+    const caminhosEnviados = [];
+
+    const maiorPosicao = fotosDoVeiculo.reduce(
+      (maior, foto) => Math.max(maior, Number(foto.position) || 0),
+      -1
+    );
+
+    for (let i = 0; i < arquivos.length; i++) {
+      const arquivo = arquivos[i].file;
+
+      const nomeSeguro = arquivo.name
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .replace(/[^a-zA-Z0-9._-]/g, "-");
+
+      const caminho =
+        usuarioId + "/" + veiculoId + "/" +
+        Date.now() + "-" + i + "-" + nomeSeguro;
+
+      const { error: erroUpload } = await db.storage
+        .from("vehicle-images")
+        .upload(caminho, arquivo, {
+          upsert: false,
+          contentType: arquivo.type
+        });
+
+      if (erroUpload) {
+        if (caminhosEnviados.length) {
+          await db.storage.from("vehicle-images").remove(caminhosEnviados);
+        }
+        throw erroUpload;
+      }
+
+      caminhosEnviados.push(caminho);
+
+      const { data: urlData } = db.storage
+        .from("vehicle-images")
+        .getPublicUrl(caminho);
+
+      registros.push({
+        vehicle_id: veiculoId,
+        image_url: urlData.publicUrl,
+        position: maiorPosicao + 1 + i
+      });
+    }
+
+    if (registros.length) {
+      const { error } = await db
+        .from("vehicle_images")
+        .insert(registros);
+
+      if (error) {
+        await db.storage.from("vehicle-images").remove(caminhosEnviados);
+        throw error;
+      }
+    }
+  }
+
+  async function efetivarExclusaoFotos() {
+    if (!fotosRemovidas.length) return;
+
+    const ids = fotosRemovidas.map(foto => foto.id);
+
+    const { error: erroBanco } = await db
+      .from("vehicle_images")
+      .delete()
+      .in("id", ids);
+
+    if (erroBanco) throw erroBanco;
+
+    const caminhos = fotosRemovidas
+      .map(foto => obterCaminhoStorage(foto.image_url))
+      .filter(Boolean);
+
+    if (caminhos.length) {
+      const { error: erroStorage } = await db.storage
+        .from("vehicle-images")
+        .remove(caminhos);
+
+      if (erroStorage) {
+        console.warn(
+          "As referências foram excluídas, mas alguns arquivos podem ter permanecido no Storage:",
+          erroStorage
+        );
+      }
+    }
+  }
+
+  async function salvarVeiculo(evento) {
+    evento.preventDefault();
+
+    if (btnSalvar.disabled) return;
+
+    btnSalvar.disabled = true;
+    btnSalvar.textContent = "Salvando...";
+
+    try {
+      const marca = document.getElementById("marca").value.trim();
+      const modelo = document.getElementById("modelo").value.trim();
+      const anoTexto = document.getElementById("ano").value.trim();
+      const precoTexto = document.getElementById("preco").value.trim();
+      const descricao = document.getElementById("descricao").value.trim();
+      const statusDesejado = document.getElementById("status").value;
+
+      if (!marca || !modelo) {
+        throw new Error("Preencha a marca e o modelo.");
+      }
+
+      if (fotoPendente) {
+        throw new Error(
+          "Confirme ou descarte a foto que está na prévia antes de salvar."
+        );
+      }
+
+      const totalFotos = quantidadeTotalFotos();
+
+      if (statusDesejado === "published" && totalFotos < MINIMO_FOTOS) {
+        throw new Error(
+          "Para publicar o anúncio, são necessárias pelo menos 4 fotos. Você possui " +
+          totalFotos + " foto(s). Se quiser salvar sem completar as fotos, selecione Rascunho."
+        );
+      }
+
+      for (const item of fotosSelecionadas) {
+        const arquivo = item.file;
+
+        const tiposPermitidos = [
+          "image/jpeg",
+          "image/png",
+          "image/webp",
+          "image/gif"
+        ];
+
+        if (!tiposPermitidos.includes(arquivo.type)) {
+          throw new Error("Formato de imagem não permitido: " + arquivo.name);
+        }
+
+        if (arquivo.size > LIMITE_FOTO) {
+          throw new Error("A foto " + arquivo.name + " ultrapassa 10 MB.");
+        }
+      }
+
+      const ano = anoTexto ? Number(anoTexto) : null;
+      const preco = precoTexto ? Number(precoTexto) : null;
+
+      if (
+        ano !== null &&
+        (!Number.isInteger(ano) || ano < 1886 || ano > 2100)
+      ) {
+        throw new Error("Informe um ano válido.");
+      }
+
+      if (preco !== null && (!Number.isFinite(preco) || preco < 0)) {
+        throw new Error("Informe um preço válido.");
+      }
+
+      const { data: sessaoData, error: sessaoErro } =
+        await db.auth.getSession();
+
+      if (sessaoErro) throw sessaoErro;
+
+      const usuario = sessaoData.session?.user;
+
+      if (!usuario) {
+        throw new Error("Sua sessão expirou. Entre novamente.");
+      }
+
+      const dadosVeiculo = {
+        brand: marca,
+        model: modelo,
+        year: ano,
+        price: preco,
+        description: descricao || null
+      };
+
+      let veiculoId;
+      let statusAnterior = null;
+
+      if (veiculoEmEdicao) {
+        veiculoId = veiculoEmEdicao;
+
+        const { data: veiculoAtual, error: erroConsulta } = await db
+          .from("vehicles")
+          .select("status")
+          .eq("id", veiculoId)
+          .single();
+
+        if (erroConsulta) throw erroConsulta;
+
+        statusAnterior = veiculoAtual.status;
+
+        const statusIntermediario =
+          statusDesejado === "published"
+            ? statusAnterior
+            : statusDesejado;
+
+        const { error } = await db
+          .from("vehicles")
+          .update({
+            ...dadosVeiculo,
+            status: statusIntermediario
+          })
+          .eq("id", veiculoId);
+
+        if (error) throw error;
+
+      } else {
+        const statusInicial =
+          statusDesejado === "published"
+            ? "draft"
+            : statusDesejado;
+
+        const { data, error } = await db
+          .from("vehicles")
+          .insert({
+            ...dadosVeiculo,
+            status: statusInicial,
+            created_by: usuario.id
+          })
+          .select("id")
+          .single();
+
+        if (error) throw error;
+
+        veiculoId = data.id;
+      }
+
+      if (fotosSelecionadas.length) {
+        await enviarFotos(fotosSelecionadas, usuario.id, veiculoId);
+      }
+
+      if (fotosRemovidas.length) {
+        await efetivarExclusaoFotos();
+      }
+
+      if (statusDesejado === "published") {
+        const { error: erroPublicacao } = await db
+          .from("vehicles")
+          .update({ status: "published" })
+          .eq("id", veiculoId);
+
+        if (erroPublicacao) throw erroPublicacao;
+      }
+
+      const estavaEditando = Boolean(veiculoEmEdicao);
+
+      cancelarEdicao();
+
+      mostrarMensagem(
+        estavaEditando
+          ? "Anúncio atualizado com sucesso! As fotos e o status foram atualizados."
+          : "Veículo cadastrado com sucesso!"
+      );
+
+      await carregarVeiculos();
+
+    } catch (erro) {
+      console.error("Erro ao salvar veículo:", erro);
+
+      mostrarMensagem(
+        "Não foi possível salvar: " + erro.message,
+        "erro"
+      );
+
+    } finally {
+      btnSalvar.disabled = false;
+
+      btnSalvar.textContent = veiculoEmEdicao
+        ? "Salvar alterações"
+        : "Cadastrar veículo";
+    }
+  }
+
+  async function excluirVeiculo(id) {
+    if (!confirm("Tem certeza que deseja excluir este anúncio?")) return;
+
+    try {
+      const { data: imagens, error: erroImagens } = await db
+        .from("vehicle_images")
+        .select("image_url")
+        .eq("vehicle_id", id);
+
+      if (erroImagens) throw erroImagens;
+
+      const caminhos = (imagens || [])
+        .map(item => obterCaminhoStorage(item.image_url))
+        .filter(Boolean);
+
+      if (caminhos.length) {
+        const { error: erroStorage } = await db.storage
+          .from("vehicle-images")
+          .remove(caminhos);
+
+        if (erroStorage) {
+          console.warn(
+            "Não foi possível remover algumas fotos:",
+            erroStorage
+          );
+        }
+      }
+
+      const { error } = await db
+        .from("vehicles")
+        .delete()
+        .eq("id", id);
+
+      if (error) throw error;
+
+      if (veiculoEmEdicao === id) {
+        cancelarEdicao();
+      }
+
+      mostrarMensagem("Anúncio excluído com sucesso.");
+
+      await carregarVeiculos();
+
+    } catch (erro) {
+      console.error(erro);
+
+      mostrarMensagem(
+        "Não foi possível excluir: " + erro.message,
+        "erro"
+      );
+    }
+  }
+
+  btnEscolherFoto.addEventListener("click", () => {
+    fotoUnica.click();
+  });
+
+  fotoUnica.addEventListener("change", () => {
+    const arquivo = fotoUnica.files?.[0];
+
+    if (!arquivo) return;
+
+    const tiposPermitidos = [
+      "image/jpeg",
+      "image/png",
+      "image/webp",
+      "image/gif"
+    ];
+
+    if (!tiposPermitidos.includes(arquivo.type)) {
+      fotoUnica.value = "";
+
+      mostrarMensagem(
+        "Formato não permitido. Escolha JPG, PNG, WEBP ou GIF.",
+        "erro"
+      );
+
+      return;
+    }
+
+    if (arquivo.size > LIMITE_FOTO) {
+      fotoUnica.value = "";
+
+      mostrarMensagem(
+        "Esta foto ultrapassa o limite de 10 MB.",
+        "erro"
+      );
+
+      return;
+    }
+
+    descartarFotoPendente();
+
+    fotoPendente = {
+      file: arquivo,
+      previewUrl: URL.createObjectURL(arquivo)
+    };
+
+    imagemPrevia.src = fotoPendente.previewUrl;
+    areaPrevia.classList.remove("hidden");
+  });
+
+  btnConfirmarFoto.addEventListener("click", () => {
+    if (!fotoPendente) return;
+
+    fotosSelecionadas.push(fotoPendente);
+
+    fotoPendente = null;
+    fotoUnica.value = "";
+    imagemPrevia.src = "";
+    areaPrevia.classList.add("hidden");
+
+    renderizarFotosSelecionadas();
+
+    mostrarMensagem(
+      "Foto adicionada! Você já pode selecionar a próxima.",
+      "sucesso"
+    );
+  });
+
+  btnDescartarFoto.addEventListener("click", () => {
+    descartarFotoPendente();
+  });
+
+  formVeiculo.addEventListener("submit", salvarVeiculo);
+
+  btnCancelar.addEventListener("click", cancelarEdicao);
+
+  document.getElementById("btnAtualizar")
+    .addEventListener("click", carregarVeiculos);
+
+  document.getElementById("status").addEventListener("change", () => {
+    atualizarContadorFotos();
+  });
+
+  document.getElementById("btnSair").addEventListener("click", async () => {
+    await db.auth.signOut();
+    window.location.replace("login.html");
+  });
+
+  atualizarContadorFotos();
+  verificarAdministrador();
+</script>
+
+</body>
+</html>
