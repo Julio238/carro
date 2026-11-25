@@ -4,6 +4,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#030712">
+  <meta name="description" content="Painel administrativo do Turbeiros Garage.">
   <title>Painel Administrativo - Turbeiros Garage</title>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -11,30 +13,154 @@
   <script src="https://cdn.tailwindcss.com"></script>
 
   <style>
-    body { background: #f3f4f6; }
+    * { box-sizing: border-box; }
+
+    body {
+      background: #f3f4f6;
+      color: #1f2937;
+      overflow-x: hidden;
+      font-family: Arial, Helvetica, sans-serif;
+    }
+
+    .cabecalho {
+      background: #030712;
+      color: white;
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      box-shadow: 0 4px 18px rgba(0,0,0,.18);
+    }
+
+    .cabecalho-conteudo {
+      max-width: 1200px;
+      margin: auto;
+      padding: 15px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 18px;
+    }
+
+    .marca-site {
+      font-size: 24px;
+      font-weight: 900;
+      letter-spacing: -1px;
+      line-height: 1.2;
+      white-space: nowrap;
+    }
+
+    .marca-site span { color: #dc2626; }
+
+    .subtitulo-site {
+      color: #9ca3af;
+      font-size: 12px;
+      margin-top: 4px;
+    }
+
+    .menu-cabecalho {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .link-menu {
+      color: #e5e7eb;
+      text-decoration: none;
+      font-weight: 700;
+      font-size: 13px;
+      padding: 11px 15px;
+      border-radius: 9px;
+      transition: .2s;
+      border: 1px solid transparent;
+      cursor: pointer;
+      background: transparent;
+    }
+
+    .link-menu:hover {
+      background: #1f2937;
+      color: white;
+    }
+
+    .link-menu.admin {
+      background: #1f2937;
+      border-color: #374151;
+      color: #fca5a5;
+    }
+
+    .link-menu.propostas {
+      background: #991b1b;
+      color: white;
+    }
+
+    .link-menu.propostas:hover {
+      background: #b91c1c;
+    }
+
+    .link-menu.sair {
+      background: #dc2626;
+      color: white;
+    }
+
+    .link-menu.sair:hover { background: #b91c1c; }
+
+    .conteudo-principal {
+      max-width: 1200px;
+      margin: auto;
+      padding: 30px 20px 55px;
+    }
+
+    .cartao-painel {
+      background: white;
+      border: 1px solid #e5e7eb;
+      border-radius: 16px;
+      box-shadow: 0 4px 16px rgba(15,23,42,.045);
+    }
+
+    .cartao-veiculo {
+      min-width: 0;
+      overflow: hidden;
+      transition: transform .2s, box-shadow .2s;
+    }
+
+    .cartao-veiculo:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 25px rgba(15,23,42,.09);
+    }
 
     .campo {
       width: 100%;
+      min-width: 0;
       border: 1px solid #d1d5db;
-      border-radius: 8px;
-      padding: 11px 12px;
+      border-radius: 10px;
+      padding: 12px 13px;
       background: white;
       outline: none;
+      font-size: 16px;
+      transition: .2s;
     }
 
     .campo:focus {
       border-color: #dc2626;
-      box-shadow: 0 0 0 2px #fee2e2;
+      box-shadow: 0 0 0 3px #fee2e2;
     }
 
+    textarea.campo { resize: vertical; }
+
     .botao {
-      border-radius: 8px;
-      padding: 11px 18px;
+      border-radius: 10px;
+      padding: 12px 18px;
       font-weight: 700;
       cursor: pointer;
-      display: inline-block;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
       text-align: center;
       text-decoration: none;
+      border: none;
+      transition: .2s;
+      min-height: 44px;
     }
 
     .botao:disabled {
@@ -48,28 +174,169 @@
       object-fit: cover;
       border-radius: 9px;
       border: 1px solid #d1d5db;
+      background: #f3f4f6;
+    }
+
+    .area-fotos {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .titulo-secao {
+      font-size: 21px;
+      font-weight: 900;
+      color: #111827;
+    }
+
+    .separador {
+      height: 1px;
+      background: #e5e7eb;
+      margin: 22px 0;
+    }
+
+    .atalho-propostas {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 20px 22px;
+      border-radius: 15px;
+      background: #111827;
+      color: white;
+      border: 1px solid #374151;
+      text-decoration: none;
+      transition: .2s;
+    }
+
+    .atalho-propostas:hover {
+      background: #1f2937;
+      transform: translateY(-2px);
+    }
+
+    .atalho-icone {
+      width: 48px;
+      height: 48px;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 12px;
+      background: #991b1b;
+      font-size: 23px;
+    }
+
+    @media (max-width: 640px) {
+      .cabecalho-conteudo {
+        flex-direction: column;
+        justify-content: center;
+        gap: 12px;
+        padding: 13px 10px;
+      }
+
+      .marca-container {
+        width: 100%;
+        text-align: center;
+      }
+
+      .marca-site { font-size: 21px; }
+
+      .menu-cabecalho {
+        width: 100%;
+        justify-content: center;
+        gap: 6px;
+      }
+
+      .link-menu {
+        font-size: 12px;
+        padding: 10px 11px;
+      }
+
+      .conteudo-principal {
+        padding: 20px 12px 40px;
+      }
+
+      .cartao-painel {
+        padding: 16px !important;
+        border-radius: 13px;
+      }
+
+      .foto-miniatura {
+        width: 95px;
+        height: 90px;
+      }
+
+      .botao {
+        padding: 12px 14px;
+        font-size: 14px;
+      }
+
+      .botoes-formulario {
+        display: flex;
+        flex-direction: column;
+      }
+
+      .botoes-formulario .botao { width: 100%; }
+
+      .botoes-veiculo {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+      }
+
+      .botoes-veiculo .botao {
+        width: 100%;
+        padding: 10px 8px;
+        font-size: 13px;
+      }
+
+      .titulo-secao { font-size: 20px; }
+
+      .atalho-propostas {
+        padding: 16px;
+        align-items: flex-start;
+      }
+
+      .atalho-propostas .botao {
+        width: 100%;
+        margin-top: 12px;
+      }
+
+      .atalho-conteudo {
+        flex-direction: column;
+        align-items: stretch;
+      }
     }
   </style>
 </head>
 
-<body class="min-h-screen text-gray-800">
+<body class="min-h-screen">
 
-<header class="bg-gray-950 text-white shadow-lg">
-  <div class="max-w-6xl mx-auto px-5 py-5 flex flex-wrap items-center justify-between gap-4">
-    <div>
-      <h1 class="text-2xl font-black">TURBEIROS GARAGE</h1>
-      <p class="text-sm text-gray-400">Painel administrativo</p>
+<header class="cabecalho">
+  <div class="cabecalho-conteudo">
+
+    <div class="marca-container">
+      <a href="index.html" class="no-underline text-white">
+        <h1 class="marca-site">
+          TURBEIROS <span>GARAGE</span>
+        </h1>
+      </a>
+      <p class="subtitulo-site">Central de administração</p>
     </div>
 
-    <div class="flex flex-wrap gap-2">
-      <a href="index.html" class="botao bg-red-600 hover:bg-red-700 text-white">
-        ← Voltar ao site
+    <nav class="menu-cabecalho">
+      <a href="index.html" class="link-menu">Início</a>
+
+      <span class="link-menu admin">Administração</span>
+
+      <a href="propostas.html" class="link-menu propostas">
+        Propostas de Venda
       </a>
 
-      <button id="btnSair" class="botao bg-gray-700 hover:bg-gray-600 text-white">
+      <button id="btnSair" class="link-menu sair">
         Sair
       </button>
-    </div>
+    </nav>
+
   </div>
 </header>
 
@@ -77,20 +344,54 @@
   Verificando acesso administrativo...
 </main>
 
-<main id="painel" class="hidden max-w-6xl mx-auto p-5 md:p-8">
+<main id="painel" class="hidden conteudo-principal">
 
-  <div class="mb-7">
-    <h2 class="text-2xl font-bold">Gerenciar anúncios</h2>
-    <p class="text-gray-600 mt-1">Cadastre, edite e gerencie seus veículos.</p>
-  </div>
+  <section class="mb-7">
+    <div class="flex flex-wrap items-center justify-between gap-4">
+      <div>
+        <p class="text-sm font-bold text-red-600 uppercase tracking-wider">
+          Área restrita
+        </p>
+        <h2 class="text-2xl md:text-3xl font-black text-gray-900 mt-1">
+          Painel Administrativo
+        </h2>
+        <p class="text-gray-500 mt-2">
+          Gerencie os anúncios e as propostas de veículos do Turbeiros Garage.
+        </p>
+      </div>
+    </div>
+  </section>
 
-  <div id="mensagem" class="hidden mb-6 rounded-lg p-4 text-sm"></div>
+  <a href="propostas.html" class="atalho-propostas mb-7">
+    <div class="flex items-center gap-4">
+      <div class="atalho-icone">📋</div>
+      <div>
+        <h3 class="font-black text-lg">Propostas de Venda</h3>
+        <p class="text-gray-300 text-sm mt-1">
+          Visualize, aprove ou rejeite as propostas enviadas pelos usuários.
+        </p>
+      </div>
+    </div>
+    <span class="text-white font-bold text-sm whitespace-nowrap">
+      Acessar →
+    </span>
+  </a>
 
-  <section id="secaoFormulario" class="bg-white rounded-xl shadow-sm p-5 md:p-7 mb-10">
+  <div id="mensagem" class="hidden mb-6 rounded-xl p-4 text-sm"></div>
 
-    <h3 id="tituloFormulario" class="text-xl font-bold mb-5">
-      Cadastrar novo veículo
-    </h3>
+  <section id="secaoFormulario" class="cartao-painel p-5 md:p-7 mb-10">
+
+    <div class="mb-6">
+      <p class="text-xs font-bold text-red-600 uppercase tracking-wider">
+        Gerenciamento de veículos
+      </p>
+      <h3 id="tituloFormulario" class="text-xl md:text-2xl font-black mt-1">
+        Cadastrar novo veículo
+      </h3>
+      <p class="text-sm text-gray-500 mt-2">
+        Preencha as informações e adicione as fotos do anúncio.
+      </p>
+    </div>
 
     <form id="formVeiculo" class="space-y-5">
 
@@ -135,7 +436,6 @@
             Quantidade de fotos:
             <span id="contadorFotos" class="text-red-600">0</span>
           </p>
-
           <p id="avisoQuantidade" class="text-sm mt-1"></p>
         </div>
 
@@ -186,9 +486,7 @@
 
         <div class="mt-6">
           <p class="font-semibold mb-3">Fotos adicionadas ao anúncio:</p>
-
-          <div id="listaFotosSelecionadas" class="flex flex-wrap gap-3"></div>
-
+          <div id="listaFotosSelecionadas" class="area-fotos"></div>
           <p id="semFotosSelecionadas" class="text-sm text-gray-500">
             Nenhuma foto adicionada ainda.
           </p>
@@ -199,7 +497,7 @@
             Fotos já cadastradas neste anúncio:
           </p>
 
-          <div id="listaFotosAtuais" class="flex flex-wrap gap-3"></div>
+          <div id="listaFotosAtuais" class="area-fotos"></div>
 
           <p class="text-xs text-gray-500 mt-3">
             Para excluir uma foto, clique em "Excluir foto".
@@ -216,7 +514,6 @@
 
       <div>
         <label class="block font-semibold mb-2" for="status">Status do anúncio</label>
-
         <select class="campo" id="status">
           <option value="published">Publicado no site</option>
           <option value="draft">Rascunho (não aparece no site)</option>
@@ -225,7 +522,7 @@
         </select>
       </div>
 
-      <div class="flex flex-wrap gap-3">
+      <div class="flex flex-wrap gap-3 botoes-formulario">
         <button id="btnSalvar" type="submit"
           class="botao bg-red-600 text-white hover:bg-red-700">
           Cadastrar veículo
@@ -243,13 +540,18 @@
   <section>
     <div class="flex flex-wrap items-center justify-between gap-3 mb-5">
       <div>
-        <h3 class="text-xl font-bold">Veículos cadastrados</h3>
-        <p class="text-sm text-gray-500">Anúncios armazenados no Supabase.</p>
+        <p class="text-xs font-bold text-red-600 uppercase tracking-wider">
+          Estoque do site
+        </p>
+        <h3 class="titulo-secao mt-1">Veículos cadastrados</h3>
+        <p class="text-sm text-gray-500 mt-1">
+          Anúncios armazenados no Supabase.
+        </p>
       </div>
 
       <button id="btnAtualizar"
-        class="botao bg-gray-800 text-white hover:bg-gray-700">
-        Atualizar lista
+        class="botao bg-gray-900 text-white hover:bg-gray-700 w-full sm:w-auto">
+        ↻ Atualizar lista
       </button>
     </div>
 
@@ -289,7 +591,7 @@
 
   function mostrarMensagem(texto, tipo = "sucesso") {
     mensagem.textContent = texto;
-    mensagem.className = "mb-6 rounded-lg p-4 text-sm";
+    mensagem.className = "mb-6 rounded-xl p-4 text-sm";
 
     if (tipo === "erro") {
       mensagem.classList.add("bg-red-100", "text-red-800");
@@ -305,10 +607,8 @@
 
   function criarElemento(tag, classe, texto) {
     const elemento = document.createElement(tag);
-
     if (classe) elemento.className = classe;
     if (texto !== undefined) elemento.textContent = texto;
-
     return elemento;
   }
 
@@ -334,7 +634,6 @@
       return decodeURIComponent(
         endereco.pathname.substring(posicao + marcador.length)
       );
-
     } catch {
       return null;
     }
@@ -378,7 +677,6 @@
     const semFotos = document.getElementById("semFotosSelecionadas");
 
     lista.replaceChildren();
-
     semFotos.classList.toggle("hidden", fotosSelecionadas.length > 0);
 
     fotosSelecionadas.forEach((item, indice) => {
@@ -390,8 +688,7 @@
       imagem.className = "foto-miniatura";
 
       const legenda = criarElemento(
-        "p",
-        "text-xs text-center mt-1 text-gray-600",
+        "p", "text-xs text-center mt-1 text-gray-600",
         "Foto nova " + (indice + 1)
       );
 
@@ -406,7 +703,6 @@
       remover.addEventListener("click", () => {
         URL.revokeObjectURL(item.previewUrl);
         fotosSelecionadas.splice(indice, 1);
-
         renderizarFotosSelecionadas();
         atualizarContadorFotos();
       });
@@ -441,8 +737,7 @@
       imagem.className = "foto-miniatura";
 
       const legenda = criarElemento(
-        "p",
-        "text-xs text-center mt-1 text-gray-600",
+        "p", "text-xs text-center mt-1 text-gray-600",
         "Foto cadastrada " + (indice + 1)
       );
 
@@ -535,7 +830,6 @@
 
     } catch (erro) {
       console.error(erro);
-
       carregando.textContent =
         "Não foi possível verificar o acesso: " + erro.message;
     }
@@ -585,14 +879,13 @@
       listaVeiculos.appendChild(
         criarElemento("p", "text-gray-500", "Nenhum veículo cadastrado ainda.")
       );
-
       return;
     }
 
     data.forEach(veiculo => {
       const card = criarElemento(
         "article",
-        "bg-white rounded-xl shadow-sm overflow-hidden"
+        "cartao-painel cartao-veiculo"
       );
 
       const fotos = (veiculo.vehicle_images || [])
@@ -601,13 +894,11 @@
 
       if (fotos.length > 0) {
         const imagem = document.createElement("img");
-
         imagem.src = fotos[0].image_url;
         imagem.alt = veiculo.brand + " " + veiculo.model;
         imagem.className = "w-full h-52 object-cover";
         imagem.loading = "lazy";
         imagem.onerror = () => imagem.remove();
-
         card.appendChild(imagem);
       } else {
         card.appendChild(
@@ -624,7 +915,7 @@
       conteudo.appendChild(
         criarElemento(
           "h4",
-          "text-lg font-bold",
+          "text-lg font-bold break-words",
           veiculo.brand + " " + veiculo.model
         )
       );
@@ -655,7 +946,11 @@
 
       const statusClasse = veiculo.status === "published"
         ? "bg-green-100 text-green-800"
-        : "bg-gray-100 text-gray-700";
+        : veiculo.status === "sold"
+          ? "bg-blue-100 text-blue-800"
+          : veiculo.status === "archived"
+            ? "bg-gray-200 text-gray-700"
+            : "bg-yellow-100 text-yellow-800";
 
       conteudo.appendChild(
         criarElemento(
@@ -669,13 +964,16 @@
         conteudo.appendChild(
           criarElemento(
             "p",
-            "text-gray-600 text-sm mt-3",
+            "text-gray-600 text-sm mt-3 whitespace-pre-line break-words",
             veiculo.description
           )
         );
       }
 
-      const rodape = criarElemento("div", "flex flex-wrap gap-2 mt-5");
+      const rodape = criarElemento(
+        "div",
+        "flex flex-wrap gap-2 mt-5 botoes-veiculo"
+      );
 
       const editar = criarElemento(
         "button",
@@ -786,7 +1084,6 @@
         if (caminhosEnviados.length) {
           await db.storage.from("vehicle-images").remove(caminhosEnviados);
         }
-
         throw erroUpload;
       }
 
@@ -938,7 +1235,6 @@
       if (veiculoEmEdicao) {
         veiculoId = veiculoEmEdicao;
 
-        // Descobre o status atual antes de decidir a ordem das alterações.
         const { data: veiculoAtual, error: erroConsulta } = await db
           .from("vehicles")
           .select("status")
@@ -949,9 +1245,6 @@
 
         statusAnterior = veiculoAtual.status;
 
-        // Se estiver mudando para publicado, mantém o status atual
-        // enquanto as fotos são enviadas e organizadas.
-        // Se estiver saindo de publicado, altera o status imediatamente.
         const statusIntermediario =
           statusDesejado === "published"
             ? statusAnterior
@@ -968,8 +1261,6 @@
         if (error) throw error;
 
       } else {
-        // Um veículo novo sempre nasce como rascunho quando
-        // o usuário deseja publicá-lo. A publicação vem depois das fotos.
         const statusInicial =
           statusDesejado === "published"
             ? "draft"
@@ -990,19 +1281,14 @@
         veiculoId = data.id;
       }
 
-      // Primeiro envia e registra todas as fotos novas.
       if (fotosSelecionadas.length) {
         await enviarFotos(fotosSelecionadas, usuario.id, veiculoId);
       }
 
-      // Depois efetiva as exclusões solicitadas.
-      // A proteção do banco verifica a quantidade final após a exclusão.
       if (fotosRemovidas.length) {
         await efetivarExclusaoFotos();
       }
 
-      // Só agora tenta publicar o anúncio.
-      // O gatilho do Supabase verificará se existem pelo menos 4 fotos.
       if (statusDesejado === "published") {
         const { error: erroPublicacao } = await db
           .from("vehicles")

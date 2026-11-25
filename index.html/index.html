@@ -4,6 +4,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#111111">
+  <meta name="description" content="Encontre carros modificados, preparados e turbinados no Turbeiros Garage.">
   <title>Turbeiros Garage - Carros Modificados e Preparados</title>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -23,99 +25,348 @@
       }
     };
   </script>
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      overflow-x: hidden;
+    }
+
+    .logo-text span {
+      color: #e63946;
+    }
+
+    .hero-section {
+      background:
+        linear-gradient(120deg, rgba(0,0,0,.94), rgba(20,20,20,.82)),
+        radial-gradient(circle at 80% 30%, #4b1519, #111 65%);
+    }
+
+    .sell-section {
+      background:
+        radial-gradient(circle at 90% 50%, rgba(230,57,70,.18), transparent 40%),
+        linear-gradient(120deg, #171717, #242424);
+    }
+
+    .sell-button {
+      transition: transform .2s ease, box-shadow .2s ease, background .2s ease;
+    }
+
+    .sell-button:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 12px 30px rgba(230,57,70,.3);
+    }
+
+    .vehicle-card {
+      transition: transform .25s ease, box-shadow .25s ease;
+    }
+
+    .vehicle-card:hover {
+      transform: translateY(-5px);
+    }
+
+    .vehicle-image {
+      transition: transform .4s ease;
+    }
+
+    .vehicle-card:hover .vehicle-image {
+      transform: scale(1.045);
+    }
+
+    .search-input {
+      width: 100%;
+      min-width: 0;
+      outline: none;
+      transition: border-color .2s, box-shadow .2s;
+    }
+
+    .search-input:focus {
+      border-color: #e63946;
+      box-shadow: 0 0 0 3px rgba(230,57,70,.15);
+    }
+
+    @media (max-width: 640px) {
+      .hero-title {
+        font-size: 2rem;
+        line-height: 1.15;
+      }
+
+      .vehicle-card:hover {
+        transform: none;
+      }
+
+      .vehicle-card:hover .vehicle-image {
+        transform: none;
+      }
+
+      .sell-button:hover {
+        transform: none;
+      }
+    }
+  </style>
 </head>
 
-<body class="bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-gray-100 min-h-screen">
+<body class="bg-gray-100 dark:bg-gray-950 text-gray-900 dark:text-gray-100 min-h-screen">
 
-  <header class="bg-tuned-dark text-white py-4 shadow-lg sticky top-0 z-50">
-    <div class="container mx-auto px-4 flex justify-between items-center">
-      <a href="index.html" class="text-2xl font-bold">
-        Turbeiros Garage
-      </a>
+  <!-- CABEÇALHO -->
+  <header class="bg-[#151515] text-white shadow-xl sticky top-0 z-50 border-b border-white/10">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6">
 
-      <nav id="mainNav" class="flex flex-wrap gap-4 items-center">
-        <a href="login.html" class="hover:text-tuned-red">Entrar</a>
-        <a href="cadastro.html"
-           class="bg-tuned-red px-4 py-2 rounded hover:bg-red-700">
-          Cadastrar
+      <div class="min-h-[76px] flex flex-col sm:flex-row items-center justify-between py-3 gap-3">
+
+        <a href="index.html"
+           class="logo-text text-xl sm:text-2xl font-black tracking-wide whitespace-nowrap">
+          TURBEIROS <span>GARAGE</span>
         </a>
-      </nav>
+
+        <nav id="mainNav"
+             class="flex items-center justify-center flex-wrap gap-3 sm:gap-5 text-sm font-semibold w-full sm:w-auto">
+
+          <a href="login.html" class="hover:text-[#e63946] transition">
+            Entrar
+          </a>
+
+          <a href="cadastro.html"
+             class="bg-[#e63946] hover:bg-red-700 px-5 py-2.5 rounded-lg transition">
+            Cadastrar
+          </a>
+
+        </nav>
+
+      </div>
+
     </div>
   </header>
 
-  <section class="bg-gradient-to-r from-gray-900 to-black text-white py-20">
-    <div class="container mx-auto px-4 text-center">
+  <!-- APRESENTAÇÃO -->
+  <section class="hero-section text-white relative overflow-hidden">
 
-      <h1 class="text-4xl md:text-5xl font-bold mb-6">
-        Encontre os Melhores Carros Modificados do Brasil
-      </h1>
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 py-14 sm:py-20 lg:py-24 text-center">
 
-      <p class="text-xl mb-10">
-        Preparados, tunados, stage 3, turbo, suspensão, estética...
-      </p>
+      <div class="max-w-4xl mx-auto">
 
-      <div class="max-w-5xl mx-auto bg-white/10 backdrop-blur-md p-6 rounded-xl">
-        <form id="formBusca" class="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <span class="inline-block bg-red-600/20 border border-red-500/40 text-red-400 px-4 py-2 rounded-full text-xs sm:text-sm font-bold tracking-wider mb-6">
+          O UNIVERSO DOS CARROS MODIFICADOS
+        </span>
+
+        <h1 class="hero-title text-4xl md:text-5xl lg:text-6xl font-black leading-tight mb-6">
+          ENCONTRE SEU PRÓXIMO
+          <span class="text-[#e63946]">PROJETO</span>
+        </h1>
+
+        <p class="text-gray-300 text-base sm:text-lg md:text-xl max-w-2xl mx-auto mb-10 leading-relaxed">
+          Carros preparados, turbinados, modificados e projetos especiais.
+          Encontre seu próximo carro no Turbeiros Garage.
+        </p>
+
+      </div>
+
+      <!-- BUSCA -->
+      <div class="max-w-5xl mx-auto bg-white rounded-2xl shadow-2xl p-4 sm:p-6 text-gray-900">
+
+        <div class="text-left mb-4">
+          <h2 class="font-bold text-lg sm:text-xl">
+            Encontre seu veículo
+          </h2>
+          <p class="text-gray-500 text-sm">
+            Utilize os filtros para encontrar o carro ideal.
+          </p>
+        </div>
+
+        <form id="formBusca"
+              class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
 
           <input
             type="text"
             id="buscaModelo"
-            placeholder="Marca / Modelo"
-            class="p-3 rounded-lg text-black"
+            placeholder="Marca ou modelo"
+            aria-label="Buscar por marca ou modelo"
+            class="search-input bg-gray-100 border border-gray-200 p-3.5 rounded-xl text-sm"
           >
 
           <input
             type="number"
             id="buscaPreco"
-            placeholder="Preço até (R$)"
+            placeholder="Preço máximo (R$)"
+            aria-label="Preço máximo"
             min="0"
-            class="p-3 rounded-lg text-black"
+            class="search-input bg-gray-100 border border-gray-200 p-3.5 rounded-xl text-sm"
           >
 
-          <select id="buscaAno" class="p-3 rounded-lg text-black">
+          <select
+            id="buscaAno"
+            aria-label="Filtrar por ano"
+            class="search-input bg-gray-100 border border-gray-200 p-3.5 rounded-xl text-sm">
+
             <option value="">Todos os anos</option>
-            <option value="2020+">2020+</option>
-            <option value="2015-2019">2015-2019</option>
+            <option value="2020+">2020 ou mais recente</option>
+            <option value="2015-2019">2015 até 2019</option>
+
           </select>
 
           <button
             type="submit"
-            class="bg-tuned-red hover:bg-red-700 text-white font-bold p-3 rounded-lg"
-          >
-            Buscar
+            class="bg-[#e63946] hover:bg-red-700 text-white font-bold p-3.5 rounded-xl transition shadow-md active:scale-95">
+
+            <span class="inline-flex items-center justify-center gap-2">
+              <svg xmlns="http://www.w3.org/2000/svg"
+                   width="19" height="19"
+                   viewBox="0 0 24 24"
+                   fill="none"
+                   stroke="currentColor"
+                   stroke-width="2.5"
+                   stroke-linecap="round"
+                   stroke-linejoin="round">
+                <circle cx="11" cy="11" r="8"/>
+                <path d="m21 21-4.35-4.35"/>
+              </svg>
+              Buscar veículos
+            </span>
+
           </button>
 
         </form>
+
       </div>
+
     </div>
+
   </section>
 
-  <section class="container mx-auto px-4 py-16">
-    <h2 class="text-3xl font-bold mb-10 text-center">
-      Destaques Recentes
-    </h2>
+  <!-- SEÇÃO PARA VENDER SEU CARRO -->
+  <section class="sell-section text-white border-y border-white/10">
+
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 py-10 sm:py-14">
+
+      <div class="flex flex-col lg:flex-row items-center justify-between gap-8">
+
+        <div class="flex-1 text-center lg:text-left">
+
+          <span class="inline-block bg-red-600/20 border border-red-500/40 text-red-400 px-4 py-2 rounded-full text-xs font-black tracking-widest mb-4">
+            SEU PROJETO MERECE DESTAQUE
+          </span>
+
+          <h2 class="text-2xl sm:text-3xl lg:text-4xl font-black leading-tight mb-4">
+            TEM UM CARRO PREPARADO?
+            <span class="text-[#e63946]">VENDA AQUI!</span>
+          </h2>
+
+          <p class="text-gray-300 text-sm sm:text-base leading-relaxed max-w-2xl">
+            Tem um carro modificado, turbo ou preparado e está pensando em vender?
+            Envie sua proposta para a Turbeiros Garage e apresente seu projeto para nós.
+          </p>
+
+        </div>
+
+        <div class="w-full lg:w-auto flex flex-col items-center">
+
+          <a
+            href="vender.html"
+            class="sell-button w-full sm:w-auto inline-flex items-center justify-center gap-3 bg-[#e63946] hover:bg-red-700 text-white font-black text-sm sm:text-base px-7 sm:px-9 py-4 rounded-xl shadow-lg text-center">
+
+            <svg xmlns="http://www.w3.org/2000/svg"
+                 width="23" height="23"
+                 viewBox="0 0 24 24"
+                 fill="none"
+                 stroke="currentColor"
+                 stroke-width="2"
+                 stroke-linecap="round"
+                 stroke-linejoin="round">
+              <path d="M12 5v14"/>
+              <path d="M5 12h14"/>
+            </svg>
+
+            QUERO VENDER MEU CARRO
+
+          </a>
+
+          <p class="text-gray-400 text-xs mt-3 text-center">
+            Envie seus dados e fotos do veículo.
+          </p>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  </section>
+
+  <!-- ANÚNCIOS -->
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 py-12 sm:py-16">
+
+    <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-3 mb-8">
+
+      <div>
+        <span class="text-[#e63946] text-xs font-black tracking-widest uppercase">
+          TURBEIROS GARAGE
+        </span>
+
+        <h2 class="text-2xl sm:text-3xl font-black mt-1">
+          Destaques Recentes
+        </h2>
+
+        <p class="text-gray-500 dark:text-gray-400 text-sm mt-2">
+          Confira os veículos disponíveis.
+        </p>
+      </div>
+
+      <div id="contadorAnuncios"
+           class="text-sm text-gray-500 dark:text-gray-400">
+      </div>
+
+    </div>
 
     <div
       id="listaAnuncios"
-      class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"
-    >
+      class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5 sm:gap-6">
+
       <p class="text-center col-span-full text-gray-500 py-12">
         Carregando veículos...
       </p>
-    </div>
-  </section>
 
-  <footer class="bg-tuned-dark text-white py-12 text-center">
-    <p>© 2026 Turbeiros Garage - Marketplace de Carros Modificados</p>
+    </div>
+
+  </main>
+
+  <!-- RODAPÉ -->
+  <footer class="bg-[#151515] text-white border-t border-white/10 mt-8">
+
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 py-10">
+
+      <div class="text-center">
+
+        <a href="index.html"
+           class="logo-text text-xl sm:text-2xl font-black tracking-wide">
+          TURBEIROS <span>GARAGE</span>
+        </a>
+
+        <p class="text-gray-400 text-sm mt-3">
+          A paixão por carros modificados começa aqui.
+        </p>
+
+        <div class="border-t border-white/10 mt-8 pt-6">
+          <p class="text-gray-500 text-xs sm:text-sm">
+            © 2026 Turbeiros Garage - Marketplace de Carros Modificados.
+          </p>
+        </div>
+
+      </div>
+
+    </div>
+
   </footer>
 
   <script>
     // CONEXÃO COM O SUPABASE
     const db = window.supabaseClient;
-    const ADMIN_EMAIL = "julioqeu@gmail.com";
 
     const container = document.getElementById("listaAnuncios");
     const nav = document.getElementById("mainNav");
+    const contadorAnuncios = document.getElementById("contadorAnuncios");
 
     let todosVeiculos = [];
 
@@ -126,27 +377,40 @@
       return elemento;
     }
 
-    // MENU DE LOGIN E CADASTRO
+    // MENU DE VISITANTE
     function mostrarVisitante() {
       nav.replaceChildren();
+
+      const inicio = document.createElement("a");
+      inicio.href = "index.html";
+      inicio.textContent = "Início";
+      inicio.className = "hover:text-[#e63946] transition";
 
       const entrar = document.createElement("a");
       entrar.href = "login.html";
       entrar.textContent = "Entrar";
-      entrar.className = "hover:text-tuned-red";
+      entrar.className = "hover:text-[#e63946] transition";
 
       const cadastrar = document.createElement("a");
       cadastrar.href = "cadastro.html";
       cadastrar.textContent = "Cadastrar";
       cadastrar.className =
-        "bg-tuned-red px-4 py-2 rounded hover:bg-red-700";
+        "bg-[#e63946] hover:bg-red-700 px-5 py-2.5 rounded-lg transition";
 
-      nav.append(entrar, cadastrar);
+      nav.append(inicio, entrar, cadastrar);
     }
 
+    // CRIAR LINK DO MENU
+    function criarLinkMenu(texto, destino, classe = "") {
+      const link = document.createElement("a");
+      link.href = destino;
+      link.textContent = texto;
+      link.className = classe || "hover:text-[#e63946] transition";
+      return link;
+    }
+
+    // CARREGAR MENU
     async function carregarMenu() {
-      // Primeiro mostra os botões para que o menu nunca fique preso
-      // na mensagem de carregamento.
       mostrarVisitante();
 
       try {
@@ -165,46 +429,74 @@
 
         nav.replaceChildren();
 
-        const perfil = document.createElement("a");
-        perfil.href = "perfil.html";
-        perfil.textContent = "Perfil";
-        perfil.className = "hover:text-tuned-red font-medium";
-        nav.appendChild(perfil);
+        nav.appendChild(
+          criarLinkMenu("Início", "index.html")
+        );
 
-        if (user.email?.toLowerCase() === ADMIN_EMAIL) {
-          try {
-            const { data: isAdmin, error: adminError } =
-              await db.rpc("is_admin");
+        nav.appendChild(
+          criarLinkMenu("Meu Perfil", "perfil.html")
+        );
 
-            if (!adminError && isAdmin === true) {
-              const admin = document.createElement("a");
-              admin.href = "admin.html";
-              admin.textContent = "Admin";
-              admin.className = "text-green-400 hover:text-green-300";
-              nav.appendChild(admin);
-            }
-          } catch (erro) {
-            console.error("Erro ao verificar administrador:", erro);
+        // VERIFICAÇÃO REAL DE ADMINISTRADOR PELO SUPABASE
+        try {
+          const { data: isAdmin, error: adminError } =
+            await db.rpc("is_admin");
+
+          if (adminError) {
+            console.error(
+              "Erro ao verificar administrador:",
+              adminError
+            );
+          } else if (isAdmin === true) {
+
+            // PAINEL ADMIN
+            const admin = criarLinkMenu(
+              "Painel Admin",
+              "admin.html",
+              "text-green-400 hover:text-green-300 transition"
+            );
+
+            nav.appendChild(admin);
+
+            // PROPOSTAS DE VENDA - SOMENTE ADMIN
+            const propostas = criarLinkMenu(
+              "Propostas de Venda",
+              "propostas.html",
+              "text-[#e63946] hover:text-red-400 font-bold transition"
+            );
+
+            nav.appendChild(propostas);
           }
+
+        } catch (erro) {
+          console.error(
+            "Erro ao verificar administrador:",
+            erro
+          );
         }
 
+        // BOTÃO SAIR
         const sair = document.createElement("button");
         sair.textContent = "Sair";
         sair.className =
-          "bg-red-600 hover:bg-red-700 px-4 py-2 rounded-lg text-sm";
+          "bg-red-600 hover:bg-red-700 px-5 py-2.5 rounded-lg transition";
 
         sair.addEventListener("click", async () => {
           sair.disabled = true;
+          sair.textContent = "Saindo...";
 
-          const { error: erroSaida } = await db.auth.signOut();
+          try {
+            const { error: erroSaida } = await db.auth.signOut();
 
-          if (erroSaida) {
-            alert("Não foi possível sair da conta: " + erroSaida.message);
+            if (erroSaida) throw erroSaida;
+
+            window.location.href = "index.html";
+
+          } catch (erro) {
+            alert("Não foi possível sair da conta: " + erro.message);
             sair.disabled = false;
-            return;
+            sair.textContent = "Sair";
           }
-
-          window.location.href = "index.html";
         });
 
         nav.appendChild(sair);
@@ -239,6 +531,7 @@
             year,
             price,
             description,
+            created_at,
             vehicle_images (
               image_url,
               position
@@ -269,14 +562,41 @@
     function renderizarVeiculos(veiculos) {
       container.replaceChildren();
 
+      contadorAnuncios.textContent =
+        veiculos.length === 1
+          ? "1 veículo encontrado"
+          : `${veiculos.length} veículos encontrados`;
+
       if (!veiculos.length) {
-        container.appendChild(
-          criarTexto(
-            "p",
-            "Nenhum veículo disponível no momento.",
-            "text-center col-span-full text-xl text-gray-500 py-12"
-          )
+        const vazio = document.createElement("div");
+        vazio.className =
+          "col-span-full text-center py-16 px-4 bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800";
+
+        const titulo = criarTexto(
+          "h3",
+          "Nenhum veículo encontrado",
+          "text-xl font-bold mb-2"
         );
+
+        const descricao = criarTexto(
+          "p",
+          "Tente alterar os filtros para encontrar outros veículos.",
+          "text-gray-500 text-sm"
+        );
+
+        const limpar = document.createElement("button");
+        limpar.type = "button";
+        limpar.textContent = "Limpar filtros";
+        limpar.className =
+          "mt-5 bg-[#e63946] hover:bg-red-700 text-white font-bold px-6 py-3 rounded-xl transition";
+
+        limpar.addEventListener("click", () => {
+          document.getElementById("formBusca").reset();
+          aplicarBusca();
+        });
+
+        vazio.append(titulo, descricao, limpar);
+        container.appendChild(vazio);
         return;
       }
 
@@ -285,7 +605,7 @@
 
         card.href = "anuncio.html?id=" + encodeURIComponent(veiculo.id);
         card.className =
-          "bg-white dark:bg-gray-800 rounded-xl overflow-hidden shadow-lg hover:shadow-2xl transition block";
+          "vehicle-card bg-white dark:bg-gray-900 rounded-2xl overflow-hidden shadow-md hover:shadow-xl border border-gray-200 dark:border-gray-800 block group";
 
         const imagens = [...(veiculo.vehicle_images || [])]
           .sort((a, b) => (a.position || 0) - (b.position || 0));
@@ -295,21 +615,62 @@
           "https://placehold.co/600x400?text=Sem+foto";
 
         const areaImagem = document.createElement("div");
-        areaImagem.className = "relative";
+        areaImagem.className =
+          "relative overflow-hidden bg-gray-200 dark:bg-gray-800";
 
         const img = document.createElement("img");
         img.src = imagem;
         img.alt = `${veiculo.brand} ${veiculo.model}`;
-        img.className = "w-full h-48 object-cover";
+        img.loading = "lazy";
+        img.className =
+          "vehicle-image w-full aspect-[4/3] object-cover";
 
         img.onerror = () => {
           img.onerror = null;
           img.src = "https://placehold.co/600x400?text=Sem+foto";
         };
 
-        const preco = document.createElement("span");
+        const etiqueta = document.createElement("span");
+        etiqueta.className =
+          "absolute top-3 left-3 bg-[#e63946] text-white px-3 py-1.5 rounded-lg text-xs font-bold shadow-md";
+        etiqueta.textContent = "À VENDA";
+
+        const quantidadeFotos = document.createElement("span");
+        quantidadeFotos.className =
+          "absolute bottom-3 right-3 bg-black/70 text-white px-3 py-1 rounded-full text-xs";
+        quantidadeFotos.textContent =
+          `${imagens.length} ${imagens.length === 1 ? "foto" : "fotos"}`;
+
+        areaImagem.append(img, etiqueta, quantidadeFotos);
+
+        const conteudo = document.createElement("div");
+        conteudo.className = "p-4 sm:p-5";
+
+        const titulo = criarTexto(
+          "h3",
+          `${veiculo.brand} ${veiculo.model}`,
+          "font-bold text-lg sm:text-xl leading-tight group-hover:text-[#e63946] transition"
+        );
+
+        const ano = criarTexto(
+          "p",
+          veiculo.year ? `Ano ${veiculo.year}` : "Ano não informado",
+          "text-xs text-gray-500 dark:text-gray-400 mt-2"
+        );
+
+        const descricao = criarTexto(
+          "p",
+          veiculo.description || "Veículo preparado. Confira todos os detalhes.",
+          "text-sm text-gray-500 dark:text-gray-400 mt-3 line-clamp-2 min-h-[40px]"
+        );
+
+        const separador = document.createElement("div");
+        separador.className =
+          "border-t border-gray-100 dark:border-gray-800 mt-4 pt-4";
+
+        const preco = document.createElement("p");
         preco.className =
-          "absolute top-3 left-3 bg-tuned-red text-white px-3 py-1 rounded-full text-sm font-bold";
+          "text-[#e63946] text-lg sm:text-xl font-black";
 
         preco.textContent = veiculo.price === null
           ? "Preço sob consulta"
@@ -318,24 +679,14 @@
               currency: "BRL"
             });
 
-        areaImagem.append(img, preco);
-
-        const conteudo = document.createElement("div");
-        conteudo.className = "p-5";
-
-        const titulo = criarTexto(
-          "h3",
-          `${veiculo.brand} ${veiculo.model} ${veiculo.year || ""}`,
-          "font-bold text-xl"
-        );
-
-        const descricao = criarTexto(
+        const verDetalhes = criarTexto(
           "p",
-          veiculo.description || "Veículo preparado",
-          "text-sm text-gray-500 dark:text-gray-400 mt-2 line-clamp-2"
+          "Ver detalhes do veículo →",
+          "text-xs text-gray-400 mt-2"
         );
 
-        conteudo.append(titulo, descricao);
+        separador.append(preco, verDetalhes);
+        conteudo.append(titulo, ano, descricao, separador);
         card.append(areaImagem, conteudo);
         container.appendChild(card);
       });
@@ -385,6 +736,7 @@
       renderizarVeiculos(filtrados);
     }
 
+    // EVENTO DE BUSCA
     document
       .getElementById("formBusca")
       .addEventListener("submit", (event) => {
