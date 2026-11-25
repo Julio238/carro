@@ -1,0 +1,1629 @@
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#111111">
+  <meta name="description" content="Gerenciamento de propostas de venda - Turbeiros Garage">
+  <title>Propostas de Venda - Turbeiros Garage</title>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="supabaseClient.js"></script>
+
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: Arial, Helvetica, sans-serif;
+      background: #111;
+      color: #f5f5f5;
+      min-height: 100vh;
+    }
+
+    button, a {
+      font: inherit;
+    }
+
+    header {
+      background: #080808;
+      border-bottom: 1px solid #292929;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .header-content {
+      max-width: 1250px;
+      margin: auto;
+      padding: 17px 22px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+    }
+
+    .logo {
+      color: white;
+      font-size: 23px;
+      font-weight: 900;
+      text-decoration: none;
+      letter-spacing: 1px;
+    }
+
+    .logo span {
+      color: #e63946;
+    }
+
+    nav {
+      display: flex;
+      align-items: center;
+      gap: 22px;
+    }
+
+    nav a {
+      color: #ddd;
+      text-decoration: none;
+      font-size: 14px;
+      transition: .2s;
+    }
+
+    nav a:hover {
+      color: #e63946;
+    }
+
+    .container {
+      max-width: 1250px;
+      margin: auto;
+      padding: 35px 22px 60px;
+    }
+
+    .page-title {
+      margin-bottom: 10px;
+      font-size: 30px;
+      font-weight: 900;
+    }
+
+    .page-title span {
+      color: #e63946;
+    }
+
+    .subtitle {
+      color: #aaa;
+      line-height: 1.6;
+      margin-bottom: 28px;
+    }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 15px;
+      margin-bottom: 30px;
+    }
+
+    .stat-card {
+      background: #1b1b1b;
+      border: 1px solid #303030;
+      border-radius: 12px;
+      padding: 20px;
+    }
+
+    .stat-card small {
+      display: block;
+      color: #aaa;
+      margin-bottom: 9px;
+    }
+
+    .stat-card strong {
+      font-size: 28px;
+    }
+
+    .stat-pending {
+      border-left: 4px solid #f0ad4e;
+    }
+
+    .stat-approved {
+      border-left: 4px solid #36c985;
+    }
+
+    .stat-rejected {
+      border-left: 4px solid #e63946;
+    }
+
+    .stat-pending strong {
+      color: #f0ad4e;
+    }
+
+    .stat-approved strong {
+      color: #36c985;
+    }
+
+    .stat-rejected strong {
+      color: #e63946;
+    }
+
+    .toolbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 15px;
+      margin-bottom: 18px;
+      flex-wrap: wrap;
+    }
+
+    .toolbar h2 {
+      font-size: 20px;
+    }
+
+    .btn {
+      border: none;
+      border-radius: 8px;
+      padding: 11px 15px;
+      cursor: pointer;
+      font-weight: bold;
+      transition: .2s;
+      text-decoration: none;
+      display: inline-flex;
+      justify-content: center;
+      align-items: center;
+      gap: 7px;
+    }
+
+    .btn:hover {
+      filter: brightness(1.12);
+      transform: translateY(-1px);
+    }
+
+    .btn:disabled {
+      opacity: .55;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .btn-refresh {
+      background: #333;
+      color: white;
+      border: 1px solid #555;
+    }
+
+    .btn-approve {
+      background: #168653;
+      color: white;
+    }
+
+    .btn-reject {
+      background: #9d2933;
+      color: white;
+    }
+
+    .btn-delete {
+      background: #333;
+      color: #ff7777;
+      border: 1px solid #744;
+    }
+
+    .btn-whatsapp {
+      background: #168653;
+      color: white;
+    }
+
+    .btn-create {
+      background: #e63946;
+      color: white;
+      border: 1px solid #ff5965;
+    }
+
+    .created-notice {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      background: #123d2a;
+      color: #6ce3a5;
+      border: 1px solid #246744;
+      padding: 10px 13px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: bold;
+    }
+
+    /* ABAS DE PROPOSTAS */
+
+    .proposal-tabs {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+
+    .tab-button {
+      background: #1b1b1b;
+      color: #aaa;
+      border: 1px solid #383838;
+      border-radius: 11px;
+      padding: 17px 15px;
+      cursor: pointer;
+      text-align: left;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      transition: .2s;
+      min-width: 0;
+    }
+
+    .tab-button:hover {
+      background: #242424;
+      border-color: #666;
+    }
+
+    .tab-button.active {
+      background: #292319;
+      border-color: #d69b38;
+      color: #ffd17a;
+      box-shadow: 0 0 0 1px #d69b38 inset;
+    }
+
+    .tab-button[data-status="approved"].active {
+      background: #142b20;
+      border-color: #36c985;
+      color: #6ce3a5;
+      box-shadow: 0 0 0 1px #36c985 inset;
+    }
+
+    .tab-button[data-status="rejected"].active {
+      background: #30191c;
+      border-color: #e63946;
+      color: #ff8a94;
+      box-shadow: 0 0 0 1px #e63946 inset;
+    }
+
+    .tab-name {
+      font-size: 15px;
+      font-weight: bold;
+    }
+
+    .tab-count {
+      min-width: 30px;
+      height: 30px;
+      padding: 0 8px;
+      border-radius: 30px;
+      display: inline-flex;
+      justify-content: center;
+      align-items: center;
+      background: #333;
+      color: white;
+      font-size: 13px;
+      font-weight: bold;
+    }
+
+    .tab-button.active .tab-count {
+      background: #493819;
+      color: #ffd17a;
+    }
+
+    .tab-button[data-status="approved"].active .tab-count {
+      background: #123d2a;
+      color: #6ce3a5;
+    }
+
+    .tab-button[data-status="rejected"].active .tab-count {
+      background: #491d22;
+      color: #ff8a94;
+    }
+
+    .tab-description {
+      color: #888;
+      font-size: 12px;
+      margin-top: 5px;
+      line-height: 1.4;
+    }
+
+    .proposals-list {
+      display: grid;
+      gap: 20px;
+    }
+
+    .proposal-card {
+      background: #1a1a1a;
+      border: 1px solid #333;
+      border-radius: 14px;
+      overflow: hidden;
+    }
+
+    .proposal-card.status-card-pending {
+      border-left: 4px solid #d69b38;
+    }
+
+    .proposal-card.status-card-approved {
+      border-left: 4px solid #36c985;
+    }
+
+    .proposal-card.status-card-rejected {
+      border-left: 4px solid #e63946;
+    }
+
+    .proposal-header {
+      padding: 19px 21px;
+      border-bottom: 1px solid #333;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .proposal-header h3 {
+      font-size: 21px;
+      margin-bottom: 5px;
+    }
+
+    .proposal-date {
+      font-size: 12px;
+      color: #999;
+    }
+
+    .status {
+      font-size: 12px;
+      font-weight: bold;
+      padding: 7px 12px;
+      border-radius: 30px;
+      text-transform: uppercase;
+    }
+
+    .status-pending {
+      background: #493819;
+      color: #ffd17a;
+    }
+
+    .status-approved {
+      background: #123d2a;
+      color: #6ce3a5;
+    }
+
+    .status-rejected {
+      background: #491d22;
+      color: #ff8a94;
+    }
+
+    .proposal-body {
+      padding: 21px;
+    }
+
+    .section-label {
+      color: #e63946;
+      font-size: 12px;
+      font-weight: bold;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 12px;
+    }
+
+    .info-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 17px;
+      margin-bottom: 23px;
+    }
+
+    .info-item small {
+      display: block;
+      color: #999;
+      font-size: 12px;
+      margin-bottom: 5px;
+    }
+
+    .info-item strong {
+      color: #eee;
+      font-size: 14px;
+      overflow-wrap: anywhere;
+    }
+
+    .description-box {
+      background: #111;
+      border: 1px solid #303030;
+      padding: 14px;
+      border-radius: 9px;
+      color: #ccc;
+      font-size: 14px;
+      line-height: 1.7;
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
+      margin-bottom: 22px;
+    }
+
+    .photo-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(145px, 1fr));
+      gap: 12px;
+      margin-bottom: 23px;
+    }
+
+    .photo-grid a {
+      display: block;
+      background: #090909;
+      border-radius: 9px;
+      overflow: hidden;
+      border: 1px solid #444;
+    }
+
+    .photo-grid img {
+      width: 100%;
+      height: 135px;
+      object-fit: cover;
+      display: block;
+      transition: .2s;
+    }
+
+    .photo-grid a:hover img {
+      transform: scale(1.04);
+    }
+
+    .no-photos {
+      color: #999;
+      font-size: 13px;
+      margin-bottom: 20px;
+    }
+
+    .proposal-actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      border-top: 1px solid #333;
+      padding-top: 18px;
+    }
+
+    .loading, .empty, .error {
+      background: #1b1b1b;
+      border: 1px solid #333;
+      border-radius: 12px;
+      padding: 35px 20px;
+      text-align: center;
+      color: #bbb;
+      line-height: 1.7;
+    }
+
+    .error {
+      color: #ff9292;
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    .access-denied {
+      max-width: 550px;
+      margin: 100px auto;
+      padding: 30px;
+      text-align: center;
+      background: #1b1b1b;
+      border: 1px solid #333;
+      border-radius: 14px;
+    }
+
+    .access-denied h2 {
+      color: #e63946;
+      margin-bottom: 12px;
+    }
+
+    .access-denied p {
+      color: #bbb;
+      line-height: 1.6;
+      margin-bottom: 20px;
+    }
+
+    .access-denied a {
+      color: white;
+      background: #e63946;
+      padding: 12px 20px;
+      border-radius: 8px;
+      text-decoration: none;
+      display: inline-block;
+    }
+
+    @media (max-width: 700px) {
+      .header-content {
+        flex-direction: column;
+        padding: 15px;
+        gap: 13px;
+      }
+
+      nav {
+        justify-content: center;
+        flex-wrap: wrap;
+        gap: 17px;
+      }
+
+      .container {
+        padding: 25px 14px 45px;
+      }
+
+      .page-title {
+        font-size: 25px;
+      }
+
+      .stats {
+        gap: 8px;
+      }
+
+      .stat-card {
+        padding: 14px 10px;
+      }
+
+      .stat-card strong {
+        font-size: 23px;
+      }
+
+      .stat-card small {
+        font-size: 11px;
+      }
+
+      .info-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 16px 12px;
+      }
+
+      .proposal-body {
+        padding: 16px;
+      }
+
+      .proposal-header {
+        padding: 16px;
+      }
+
+      .proposal-header h3 {
+        font-size: 18px;
+      }
+
+      .proposal-actions .btn {
+        flex: 1 1 100%;
+      }
+
+      .photo-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      .photo-grid img {
+        height: 125px;
+      }
+
+      .toolbar {
+        align-items: stretch;
+      }
+
+      .toolbar .btn {
+        width: 100%;
+      }
+
+      .proposal-tabs {
+        gap: 7px;
+      }
+
+      .tab-button {
+        padding: 13px 9px;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+      }
+
+      .tab-name {
+        font-size: 12px;
+      }
+
+      .tab-description {
+        font-size: 10px;
+      }
+
+      .tab-count {
+        min-width: 25px;
+        height: 25px;
+        font-size: 12px;
+      }
+    }
+
+    @media (max-width: 380px) {
+      .tab-description {
+        display: none;
+      }
+
+      .tab-button {
+        align-items: center;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+<header>
+  <div class="header-content">
+    <a href="index.html" class="logo">
+      TURBEIROS <span>GARAGE</span>
+    </a>
+
+    <nav id="mainNav">
+      <a href="index.html">Início</a>
+      <a href="perfil.html">Meu Perfil</a>
+      <a href="admin.html">Painel Admin</a>
+    </nav>
+  </div>
+</header>
+
+<main class="container hidden" id="adminContent">
+
+  <h1 class="page-title">
+    PROPOSTAS <span>DE VENDA</span>
+  </h1>
+
+  <p class="subtitle">
+    Gerencie os veículos enviados pelos usuários. Analise os dados e as fotos
+    antes de aprovar ou rejeitar cada proposta.
+  </p>
+
+  <section class="stats">
+    <div class="stat-card stat-pending">
+      <small>Pendentes</small>
+      <strong id="totalPending">0</strong>
+    </div>
+
+    <div class="stat-card stat-approved">
+      <small>Aprovadas</small>
+      <strong id="totalApproved">0</strong>
+    </div>
+
+    <div class="stat-card stat-rejected">
+      <small>Rejeitadas</small>
+      <strong id="totalRejected">0</strong>
+    </div>
+  </section>
+
+  <section>
+    <div class="toolbar">
+      <h2 id="sectionTitle">Propostas pendentes</h2>
+
+      <button class="btn btn-refresh" id="btnRefresh" type="button">
+        ↻ Atualizar propostas
+      </button>
+    </div>
+
+    <div class="proposal-tabs" role="tablist" aria-label="Filtrar propostas">
+
+      <button
+        class="tab-button active"
+        type="button"
+        data-status="pending"
+        role="tab"
+        aria-selected="true"
+      >
+        <span>
+          <span class="tab-name">Pendentes</span>
+          <span class="tab-description">Aguardando análise</span>
+        </span>
+        <span class="tab-count" id="tabPendingCount">0</span>
+      </button>
+
+      <button
+        class="tab-button"
+        type="button"
+        data-status="approved"
+        role="tab"
+        aria-selected="false"
+      >
+        <span>
+          <span class="tab-name">Aprovadas</span>
+          <span class="tab-description">Propostas aceitas</span>
+        </span>
+        <span class="tab-count" id="tabApprovedCount">0</span>
+      </button>
+
+      <button
+        class="tab-button"
+        type="button"
+        data-status="rejected"
+        role="tab"
+        aria-selected="false"
+      >
+        <span>
+          <span class="tab-name">Rejeitadas</span>
+          <span class="tab-description">Propostas recusadas</span>
+        </span>
+        <span class="tab-count" id="tabRejectedCount">0</span>
+      </button>
+
+    </div>
+
+    <div id="proposalsList" class="proposals-list">
+      <div class="loading">Carregando propostas...</div>
+    </div>
+  </section>
+
+</main>
+
+<div id="accessDenied" class="access-denied hidden">
+  <h2>Acesso não autorizado</h2>
+  <p>
+    Esta página é exclusiva para o administrador do Turbeiros Garage.
+  </p>
+  <a href="index.html">Voltar para o início</a>
+</div>
+
+<script>
+  const db = window.supabaseClient;
+
+  const WHATSAPP = "5541988204612";
+
+  let propostas = [];
+  let carregando = false;
+  let usuarioAdmin = null;
+  let abaAtual = "pending";
+
+  const conversoesEmAndamento = new Set();
+
+  const adminContent = document.getElementById("adminContent");
+  const accessDenied = document.getElementById("accessDenied");
+  const proposalsList = document.getElementById("proposalsList");
+
+  function escaparHTML(valor) {
+    return String(valor ?? "").replace(/[&<>"']/g, caractere => ({
+      "&": "&amp;",
+      "<": "&lt;",
+      ">": "&gt;",
+      '"': "&quot;",
+      "'": "&#039;"
+    })[caractere]);
+  }
+
+  function formatarMoeda(valor) {
+    if (valor === null || valor === undefined || valor === "") {
+      return "Não informado";
+    }
+
+    return Number(valor).toLocaleString("pt-BR", {
+      style: "currency",
+      currency: "BRL"
+    });
+  }
+
+  function formatarData(data) {
+    if (!data) return "Data não informada";
+
+    return new Date(data).toLocaleString("pt-BR", {
+      dateStyle: "short",
+      timeStyle: "short"
+    });
+  }
+
+  function nomeStatus(status) {
+    const nomes = {
+      pending: "Pendente",
+      approved: "Aprovada",
+      rejected: "Rejeitada"
+    };
+
+    return nomes[status] || status;
+  }
+
+  function atualizarEstatisticas() {
+    const pendentes = propostas.filter(p => p.status === "pending").length;
+    const aprovadas = propostas.filter(p => p.status === "approved").length;
+    const rejeitadas = propostas.filter(p => p.status === "rejected").length;
+
+    document.getElementById("totalPending").textContent = pendentes;
+    document.getElementById("totalApproved").textContent = aprovadas;
+    document.getElementById("totalRejected").textContent = rejeitadas;
+
+    document.getElementById("tabPendingCount").textContent = pendentes;
+    document.getElementById("tabApprovedCount").textContent = aprovadas;
+    document.getElementById("tabRejectedCount").textContent = rejeitadas;
+  }
+
+  function selecionarAba(status) {
+    abaAtual = status;
+
+    document.querySelectorAll(".tab-button").forEach(botao => {
+      const selecionado = botao.dataset.status === status;
+
+      botao.classList.toggle("active", selecionado);
+      botao.setAttribute("aria-selected", String(selecionado));
+    });
+
+    const titulos = {
+      pending: "Propostas pendentes",
+      approved: "Propostas aprovadas",
+      rejected: "Propostas rejeitadas"
+    };
+
+    document.getElementById("sectionTitle").textContent =
+      titulos[status] || "Propostas recebidas";
+
+    renderizarPropostas();
+  }
+
+  function montarLinkWhatsApp(telefone, nome, marca, modelo) {
+    let numero = String(telefone || WHATSAPP).replace(/\D/g, "");
+
+    if (numero.length < 10) {
+      numero = WHATSAPP;
+    }
+
+    const mensagem =
+      `Olá ${nome || "tudo bem"}! Aqui é do Turbeiros Garage. ` +
+      `Gostaria de conversar sobre sua proposta do veículo ${marca} ${modelo}.`;
+
+    return `https://wa.me/${numero}?text=${encodeURIComponent(mensagem)}`;
+  }
+
+  async function carregarFotos(submissionId) {
+    const { data, error } = await db
+      .from("vehicle_submission_images")
+      .select("id, file_path, position")
+      .eq("submission_id", submissionId)
+      .order("position", { ascending: true });
+
+    if (error) {
+      console.error("Erro ao consultar fotos:", error);
+      return [];
+    }
+
+    const fotos = [];
+
+    for (const foto of (data || [])) {
+      const { data: signedData, error: signedError } =
+        await db.storage
+          .from("vehicle-submissions")
+          .createSignedUrl(foto.file_path, 3600);
+
+      if (signedError) {
+        console.error("Erro ao gerar link da foto:", signedError);
+        continue;
+      }
+
+      if (signedData?.signedUrl) {
+        fotos.push({
+          file_path: foto.file_path,
+          position: foto.position,
+          signedUrl: signedData.signedUrl
+        });
+      }
+    }
+
+    return fotos;
+  }
+
+  async function carregarPropostas() {
+    if (carregando) return;
+
+    carregando = true;
+
+    proposalsList.innerHTML =
+      '<div class="loading">Carregando propostas...</div>';
+
+    try {
+      const { data, error } = await db
+        .from("vehicle_submissions")
+        .select("*")
+        .order("created_at", { ascending: false });
+
+      if (error) throw error;
+
+      const lista = data || [];
+
+      propostas = await Promise.all(
+        lista.map(async proposta => ({
+          ...proposta,
+          fotos: await carregarFotos(proposta.id)
+        }))
+      );
+
+      atualizarEstatisticas();
+      renderizarPropostas();
+
+    } catch (error) {
+      console.error("Erro ao carregar propostas:", error);
+
+      proposalsList.innerHTML = `
+        <div class="error">
+          Não foi possível carregar as propostas.<br>
+          ${escaparHTML(error.message)}
+        </div>
+      `;
+    } finally {
+      carregando = false;
+    }
+  }
+
+  function renderizarPropostas() {
+    const lista = propostas.filter(proposta => {
+      return proposta.status === abaAtual;
+    });
+
+    if (lista.length === 0) {
+      const mensagens = {
+        pending: {
+          titulo: "Nenhuma proposta pendente!",
+          texto: "Todas as propostas já foram analisadas ou ainda não chegaram novas propostas."
+        },
+        approved: {
+          titulo: "Nenhuma proposta aprovada.",
+          texto: "Quando você aprovar uma proposta, ela aparecerá aqui."
+        },
+        rejected: {
+          titulo: "Nenhuma proposta rejeitada.",
+          texto: "As propostas que você rejeitar aparecerão nesta área."
+        }
+      };
+
+      const mensagem = mensagens[abaAtual];
+
+      proposalsList.innerHTML = `
+        <div class="empty">
+          <strong>${mensagem.titulo}</strong><br>
+          ${mensagem.texto}
+        </div>
+      `;
+
+      return;
+    }
+
+    proposalsList.innerHTML = lista.map(proposta => {
+      const nomeVeiculo =
+        `${proposta.brand || ""} ${proposta.model || ""}`.trim();
+
+      const statusClasse = {
+        pending: "status-pending",
+        approved: "status-approved",
+        rejected: "status-rejected"
+      }[proposta.status] || "status-pending";
+
+      const statusCardClasse = {
+        pending: "status-card-pending",
+        approved: "status-card-approved",
+        rejected: "status-card-rejected"
+      }[proposta.status] || "status-card-pending";
+
+      const fotosHTML = proposta.fotos.length
+        ? `
+          <div class="photo-grid">
+            ${proposta.fotos.map(foto => `
+              <a href="${escaparHTML(foto.signedUrl)}" target="_blank" rel="noopener noreferrer">
+                <img
+                  src="${escaparHTML(foto.signedUrl)}"
+                  alt="Foto do veículo"
+                  loading="lazy"
+                >
+              </a>
+            `).join("")}
+          </div>
+        `
+        : `<p class="no-photos">Nenhuma foto disponível para esta proposta.</p>`;
+
+      const whatsapp = montarLinkWhatsApp(
+        proposta.seller_phone,
+        proposta.seller_name,
+        proposta.brand,
+        proposta.model
+      );
+
+      let botaoConversao = "";
+
+      if (proposta.status === "approved") {
+        if (proposta.created_vehicle_id) {
+          botaoConversao = `
+            <span class="created-notice">
+              ✓ Anúncio criado
+            </span>
+          `;
+        } else {
+          botaoConversao = `
+            <button
+              class="btn btn-create"
+              type="button"
+              onclick="criarAnuncio('${proposta.id}')"
+              ${conversoesEmAndamento.has(proposta.id) ? "disabled" : ""}
+            >
+              + Criar anúncio no catálogo
+            </button>
+          `;
+        }
+      }
+
+      return `
+        <article class="proposal-card ${statusCardClasse}">
+
+          <div class="proposal-header">
+            <div>
+              <h3>${escaparHTML(nomeVeiculo || "Veículo sem identificação")}</h3>
+              <p class="proposal-date">
+                Enviada em ${formatarData(proposta.created_at)}
+              </p>
+            </div>
+
+            <span class="status ${statusClasse}">
+              ${nomeStatus(proposta.status)}
+            </span>
+          </div>
+
+          <div class="proposal-body">
+
+            <p class="section-label">Dados do vendedor</p>
+
+            <div class="info-grid">
+              <div class="info-item">
+                <small>Nome</small>
+                <strong>${escaparHTML(proposta.seller_name || "Não informado")}</strong>
+              </div>
+
+              <div class="info-item">
+                <small>Telefone</small>
+                <strong>${escaparHTML(proposta.seller_phone || "Não informado")}</strong>
+              </div>
+
+              <div class="info-item">
+                <small>Cidade</small>
+                <strong>${escaparHTML(proposta.city || "Não informada")}</strong>
+              </div>
+            </div>
+
+            <p class="section-label">Dados do veículo</p>
+
+            <div class="info-grid">
+              <div class="info-item">
+                <small>Marca</small>
+                <strong>${escaparHTML(proposta.brand || "Não informada")}</strong>
+              </div>
+
+              <div class="info-item">
+                <small>Modelo</small>
+                <strong>${escaparHTML(proposta.model || "Não informado")}</strong>
+              </div>
+
+              <div class="info-item">
+                <small>Ano</small>
+                <strong>${escaparHTML(proposta.year || "Não informado")}</strong>
+              </div>
+
+              <div class="info-item">
+                <small>Quilometragem</small>
+                <strong>
+                  ${proposta.mileage != null
+                    ? Number(proposta.mileage).toLocaleString("pt-BR") + " km"
+                    : "Não informada"}
+                </strong>
+              </div>
+
+              <div class="info-item">
+                <small>Preço desejado</small>
+                <strong>${formatarMoeda(proposta.desired_price)}</strong>
+              </div>
+            </div>
+
+            <p class="section-label">Modificações realizadas</p>
+
+            <div class="description-box">${
+              escaparHTML(proposta.modifications || "Não informado")
+            }</div>
+
+            <p class="section-label">Descrição do veículo</p>
+
+            <div class="description-box">${
+              escaparHTML(proposta.description || "Nenhuma descrição enviada.")
+            }</div>
+
+            <p class="section-label">Fotos do veículo</p>
+
+            ${fotosHTML}
+
+            <div class="proposal-actions">
+
+              <a
+                href="${escaparHTML(whatsapp)}"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="btn btn-whatsapp"
+              >
+                WhatsApp do vendedor
+              </a>
+
+              ${
+                proposta.status === "pending"
+                  ? `
+                    <button
+                      class="btn btn-approve"
+                      type="button"
+                      onclick="alterarStatus('${proposta.id}', 'approved')"
+                    >
+                      ✓ Aprovar proposta
+                    </button>
+
+                    <button
+                      class="btn btn-reject"
+                      type="button"
+                      onclick="alterarStatus('${proposta.id}', 'rejected')"
+                    >
+                      ✕ Rejeitar proposta
+                    </button>
+                  `
+                  : ""
+              }
+
+              ${botaoConversao}
+
+              <button
+                class="btn btn-delete"
+                type="button"
+                onclick="excluirProposta('${proposta.id}')"
+              >
+                Excluir proposta
+              </button>
+
+            </div>
+
+          </div>
+        </article>
+      `;
+    }).join("");
+  }
+
+  async function alterarStatus(id, novoStatus) {
+    const proposta = propostas.find(p => p.id === id);
+
+    if (!proposta) return;
+
+    const acao = novoStatus === "approved" ? "aprovar" : "rejeitar";
+
+    const confirmar = confirm(
+      `Tem certeza que deseja ${acao} a proposta de ${proposta.brand} ${proposta.model}?`
+    );
+
+    if (!confirmar) return;
+
+    const { error } = await db
+      .from("vehicle_submissions")
+      .update({
+        status: novoStatus,
+        updated_at: new Date().toISOString()
+      })
+      .eq("id", id);
+
+    if (error) {
+      console.error(error);
+      alert("Não foi possível atualizar a proposta: " + error.message);
+      return;
+    }
+
+    alert(
+      novoStatus === "approved"
+        ? "Proposta aprovada com sucesso! Agora você pode criar o anúncio no catálogo."
+        : "Proposta rejeitada com sucesso!"
+    );
+
+    await carregarPropostas();
+
+    // Após a decisão, leva o administrador para a aba correspondente.
+    selecionarAba(novoStatus);
+  }
+
+  function montarDescricaoAnuncio(proposta) {
+    const partes = [];
+
+    if (proposta.description?.trim()) {
+      partes.push(proposta.description.trim());
+    }
+
+    if (proposta.mileage !== null && proposta.mileage !== undefined) {
+      partes.push(
+        "Quilometragem: " +
+        Number(proposta.mileage).toLocaleString("pt-BR") +
+        " km."
+      );
+    }
+
+    if (proposta.city?.trim()) {
+      partes.push("Cidade: " + proposta.city.trim() + ".");
+    }
+
+    if (proposta.modifications?.trim()) {
+      partes.push(
+        "Modificações e preparação:\n" +
+        proposta.modifications.trim()
+      );
+    }
+
+    partes.push(
+      "Anúncio originado de uma proposta enviada ao Turbeiros Garage."
+    );
+
+    return partes.join("\n\n");
+  }
+
+  function obterExtensao(caminho, contentType) {
+    const nome = String(caminho || "").split("/").pop() || "";
+    const extensao = nome.includes(".")
+      ? nome.split(".").pop().toLowerCase()
+      : "";
+
+    if (["jpg", "jpeg", "png", "webp", "gif"].includes(extensao)) {
+      return extensao;
+    }
+
+    const tipos = {
+      "image/jpeg": "jpg",
+      "image/png": "png",
+      "image/webp": "webp",
+      "image/gif": "gif"
+    };
+
+    return tipos[contentType] || "jpg";
+  }
+
+  async function criarAnuncio(id) {
+    if (conversoesEmAndamento.has(id)) return;
+
+    const proposta = propostas.find(p => p.id === id);
+
+    if (!proposta) {
+      alert("Proposta não encontrada.");
+      return;
+    }
+
+    if (proposta.status !== "approved") {
+      alert("Somente propostas aprovadas podem virar anúncios.");
+      return;
+    }
+
+    if (proposta.created_vehicle_id) {
+      alert("Esta proposta já foi convertida em anúncio.");
+      return;
+    }
+
+    const nomeVeiculo =
+      `${proposta.brand || ""} ${proposta.model || ""}`.trim();
+
+    const confirmar = confirm(
+      `Criar um anúncio em rascunho para ${nomeVeiculo}?\n\n` +
+      "Os dados e as fotos serão copiados para o catálogo. " +
+      "O anúncio não será publicado automaticamente."
+    );
+
+    if (!confirmar) return;
+
+    conversoesEmAndamento.add(id);
+    renderizarPropostas();
+
+    let vehicleId = null;
+    const arquivosEnviados = [];
+
+    try {
+      const { data: usuarioData, error: usuarioError } =
+        await db.auth.getUser();
+
+      if (usuarioError) throw usuarioError;
+
+      const usuario = usuarioData?.user;
+
+      if (!usuario) {
+        throw new Error("Sua sessão expirou. Entre novamente.");
+      }
+
+      const { data: propostaAtual, error: propostaError } = await db
+        .from("vehicle_submissions")
+        .select("id, status, created_vehicle_id")
+        .eq("id", id)
+        .single();
+
+      if (propostaError) throw propostaError;
+
+      if (propostaAtual.status !== "approved") {
+        throw new Error("A proposta não está aprovada.");
+      }
+
+      if (propostaAtual.created_vehicle_id) {
+        throw new Error("Esta proposta já foi convertida em anúncio.");
+      }
+
+      const { data: imagens, error: imagensError } = await db
+        .from("vehicle_submission_images")
+        .select("id, file_path, position")
+        .eq("submission_id", id)
+        .order("position", { ascending: true });
+
+      if (imagensError) throw imagensError;
+
+      // 1. Cria o veículo como rascunho.
+      const dadosVeiculo = {
+        brand: proposta.brand,
+        model: proposta.model,
+        year: proposta.year || null,
+        price: proposta.desired_price || null,
+        description: montarDescricaoAnuncio(proposta),
+        status: "draft",
+        created_by: usuario.id
+      };
+
+      const { data: novoVeiculo, error: veiculoError } = await db
+        .from("vehicles")
+        .insert(dadosVeiculo)
+        .select("id")
+        .single();
+
+      if (veiculoError) throw veiculoError;
+
+      vehicleId = novoVeiculo.id;
+
+      // 2. Copia as fotos do bucket privado para o público.
+      const fotosCatalogo = [];
+
+      for (const foto of (imagens || [])) {
+        const { data: signedData, error: signedError } =
+          await db.storage
+            .from("vehicle-submissions")
+            .createSignedUrl(foto.file_path, 3600);
+
+        if (signedError) throw signedError;
+
+        if (!signedData?.signedUrl) {
+          throw new Error("Não foi possível acessar uma das fotos da proposta.");
+        }
+
+        const respostaFoto = await fetch(signedData.signedUrl);
+
+        if (!respostaFoto.ok) {
+          throw new Error("Não foi possível baixar uma das fotos da proposta.");
+        }
+
+        const blob = await respostaFoto.blob();
+
+        const extensao = obterExtensao(
+          foto.file_path,
+          blob.type
+        );
+
+        const tiposPermitidos = [
+          "image/jpeg",
+          "image/png",
+          "image/webp",
+          "image/gif"
+        ];
+
+        if (!tiposPermitidos.includes(blob.type)) {
+          throw new Error(
+            "Uma das fotos possui formato não permitido: " + blob.type
+          );
+        }
+
+        const novoCaminho =
+          `${vehicleId}/${crypto.randomUUID()}.${extensao}`;
+
+        const { error: uploadError } = await db.storage
+          .from("vehicle-images")
+          .upload(novoCaminho, blob, {
+            contentType: blob.type,
+            upsert: false
+          });
+
+        if (uploadError) throw uploadError;
+
+        arquivosEnviados.push(novoCaminho);
+
+        const { data: urlPublica } = db.storage
+          .from("vehicle-images")
+          .getPublicUrl(novoCaminho);
+
+        fotosCatalogo.push({
+          vehicle_id: vehicleId,
+          image_url: urlPublica.publicUrl,
+          position: Number(foto.position) || 0
+        });
+      }
+
+      // 3. Registra as fotos na tabela vehicle_images.
+      if (fotosCatalogo.length > 0) {
+        const { error: cadastroFotosError } = await db
+          .from("vehicle_images")
+          .insert(fotosCatalogo);
+
+        if (cadastroFotosError) throw cadastroFotosError;
+      }
+
+      // 4. Registra o vínculo para impedir conversões duplicadas.
+      const { error: vinculoError } = await db
+        .from("vehicle_submissions")
+        .update({
+          created_vehicle_id: vehicleId,
+          updated_at: new Date().toISOString()
+        })
+        .eq("id", id)
+        .eq("status", "approved")
+        .is("created_vehicle_id", null);
+
+      if (vinculoError) throw vinculoError;
+
+      // Confirma que o vínculo foi salvo.
+      const { data: confirmacao, error: confirmacaoError } = await db
+        .from("vehicle_submissions")
+        .select("created_vehicle_id")
+        .eq("id", id)
+        .single();
+
+      if (confirmacaoError) throw confirmacaoError;
+
+      if (confirmacao.created_vehicle_id !== vehicleId) {
+        throw new Error(
+          "Não foi possível confirmar o vínculo entre a proposta e o anúncio."
+        );
+      }
+
+      alert(
+        "Anúncio criado com sucesso!\n\n" +
+        "O veículo foi salvo como RASCUNHO no painel administrativo.\n" +
+        "Fotos copiadas: " + fotosCatalogo.length + ".\n\n" +
+        "Agora você pode conferir e editar o anúncio antes de publicar."
+      );
+
+      await carregarPropostas();
+
+    } catch (error) {
+      console.error("Erro ao criar anúncio:", error);
+
+      // Se a conversão falhar, tenta limpar o que foi criado.
+      if (vehicleId) {
+        try {
+          await db
+            .from("vehicle_images")
+            .delete()
+            .eq("vehicle_id", vehicleId);
+
+          if (arquivosEnviados.length > 0) {
+            await db.storage
+              .from("vehicle-images")
+              .remove(arquivosEnviados);
+          }
+
+          await db
+            .from("vehicles")
+            .delete()
+            .eq("id", vehicleId);
+
+        } catch (limpezaError) {
+          console.error(
+            "Erro ao limpar conversão incompleta:",
+            limpezaError
+          );
+        }
+      }
+
+      alert(
+        "Não foi possível criar o anúncio.\n\n" +
+        error.message +
+        "\n\nNenhuma proposta foi excluída."
+      );
+
+    } finally {
+      conversoesEmAndamento.delete(id);
+      renderizarPropostas();
+    }
+  }
+
+  async function excluirProposta(id) {
+    const proposta = propostas.find(p => p.id === id);
+
+    if (!proposta) return;
+
+    if (proposta.created_vehicle_id) {
+      alert(
+        "Esta proposta já foi convertida em anúncio.\n\n" +
+        "Para preservar o histórico, não é possível excluí-la por esta tela."
+      );
+      return;
+    }
+
+    const confirmar = confirm(
+      `Deseja realmente excluir a proposta de ${proposta.brand} ${proposta.model}?\n\nEssa ação não poderá ser desfeita.`
+    );
+
+    if (!confirmar) return;
+
+    try {
+      const { data: imagens, error: imagensError } = await db
+        .from("vehicle_submission_images")
+        .select("file_path")
+        .eq("submission_id", id);
+
+      if (imagensError) throw imagensError;
+
+      const caminhos = (imagens || []).map(item => item.file_path);
+
+      if (caminhos.length > 0) {
+        const { error: storageError } = await db.storage
+          .from("vehicle-submissions")
+          .remove(caminhos);
+
+        if (storageError) {
+          throw new Error(
+            "Não foi possível excluir os arquivos das fotos: " +
+            storageError.message
+          );
+        }
+      }
+
+      const { error: deleteError } = await db
+        .from("vehicle_submissions")
+        .delete()
+        .eq("id", id);
+
+      if (deleteError) throw deleteError;
+
+      alert("Proposta excluída com sucesso!");
+
+      await carregarPropostas();
+
+    } catch (error) {
+      console.error("Erro ao excluir proposta:", error);
+      alert("Não foi possível excluir a proposta: " + error.message);
+    }
+  }
+
+  async function verificarAdministrador() {
+    try {
+      if (!db) {
+        throw new Error("Conexão com o Supabase não encontrada.");
+      }
+
+      const { data: sessionData, error: sessionError } =
+        await db.auth.getSession();
+
+      if (sessionError) throw sessionError;
+
+      const usuario = sessionData?.session?.user;
+
+      if (!usuario) {
+        accessDenied.classList.remove("hidden");
+        return;
+      }
+
+      const { data: admin, error: adminError } =
+        await db.rpc("is_admin");
+
+      if (adminError) throw adminError;
+
+      if (admin !== true) {
+        accessDenied.classList.remove("hidden");
+        return;
+      }
+
+      usuarioAdmin = usuario;
+      adminContent.classList.remove("hidden");
+
+      await carregarPropostas();
+
+    } catch (error) {
+      console.error("Erro na verificação de acesso:", error);
+
+      accessDenied.classList.remove("hidden");
+
+      const mensagem = accessDenied.querySelector("p");
+      mensagem.textContent =
+        "Não foi possível verificar sua autorização. " + error.message;
+    }
+  }
+
+  // Eventos das abas.
+  document.querySelectorAll(".tab-button").forEach(botao => {
+    botao.addEventListener("click", () => {
+      selecionarAba(botao.dataset.status);
+    });
+  });
+
+  document.getElementById("btnRefresh").addEventListener(
+    "click",
+    carregarPropostas
+  );
+
+  verificarAdministrador();
+</script>
+
+</body>
+</html>
