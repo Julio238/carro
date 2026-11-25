@@ -89,7 +89,8 @@
       object-fit: contain;
       transition: opacity .18s ease;
       display: block;
-      pointer-events: none;
+      cursor: zoom-in;
+      pointer-events: auto;
     }
 
     .seta-galeria {
@@ -133,6 +134,7 @@
       border-radius: 30px;
       font-size: 13px;
       z-index: 5;
+      pointer-events: none;
     }
 
     .miniatura {
@@ -168,7 +170,106 @@
       cursor: not-allowed;
     }
 
-    /* AJUSTES PARA CELULAR */
+    /* VISUALIZADOR DE FOTOS */
+
+    .visualizador {
+      position: fixed;
+      inset: 0;
+      z-index: 1000;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0, 0, 0, .96);
+      padding: 65px 65px 75px;
+    }
+
+    .visualizador.aberto {
+      display: flex;
+    }
+
+    .visualizador-imagem {
+      max-width: 100%;
+      max-height: 100%;
+      width: auto;
+      height: auto;
+      object-fit: contain;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+
+    .visualizador-fechar {
+      position: absolute;
+      top: 15px;
+      right: 22px;
+      width: 48px;
+      height: 48px;
+      border: 0;
+      border-radius: 50%;
+      color: white;
+      background: rgba(255, 255, 255, .15);
+      font-size: 32px;
+      cursor: pointer;
+      z-index: 3;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .visualizador-fechar:hover {
+      background: #e63946;
+    }
+
+    .visualizador-seta {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 50px;
+      height: 50px;
+      border: 0;
+      border-radius: 50%;
+      color: white;
+      background: rgba(255, 255, 255, .15);
+      font-size: 34px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 3;
+    }
+
+    .visualizador-seta:hover {
+      background: #e63946;
+    }
+
+    .visualizador-anterior {
+      left: 15px;
+    }
+
+    .visualizador-proxima {
+      right: 15px;
+    }
+
+    .visualizador-contador {
+      position: absolute;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      color: white;
+      background: rgba(255, 255, 255, .15);
+      padding: 9px 18px;
+      border-radius: 30px;
+      font-size: 14px;
+    }
+
+    .visualizador-ajuda {
+      position: absolute;
+      bottom: 62px;
+      left: 50%;
+      transform: translateX(-50%);
+      color: rgba(255, 255, 255, .65);
+      font-size: 12px;
+      white-space: nowrap;
+    }
 
     @media (max-width: 640px) {
       .cabecalho-conteudo {
@@ -216,6 +317,36 @@
 
       .seta-proxima {
         right: 7px;
+      }
+
+      .visualizador {
+        padding: 65px 10px 90px;
+      }
+
+      .visualizador-fechar {
+        top: 12px;
+        right: 12px;
+        width: 42px;
+        height: 42px;
+      }
+
+      .visualizador-seta {
+        width: 40px;
+        height: 40px;
+        font-size: 27px;
+        background: rgba(0, 0, 0, .55);
+      }
+
+      .visualizador-anterior {
+        left: 8px;
+      }
+
+      .visualizador-proxima {
+        right: 8px;
+      }
+
+      .visualizador-ajuda {
+        bottom: 58px;
       }
     }
 
@@ -268,6 +399,50 @@
 
   </main>
 
+  <!-- VISUALIZADOR DE FOTOS EM TELA CHEIA -->
+  <div
+    id="visualizador"
+    class="visualizador"
+    role="dialog"
+    aria-modal="true"
+    aria-label="Visualização ampliada das fotos"
+    aria-hidden="true"
+  >
+    <button
+      type="button"
+      id="btnFecharVisualizador"
+      class="visualizador-fechar"
+      aria-label="Fechar visualização"
+    >×</button>
+
+    <button
+      type="button"
+      id="btnVisualizadorAnterior"
+      class="visualizador-seta visualizador-anterior"
+      aria-label="Foto anterior"
+    >‹</button>
+
+    <img
+      id="imagemAmpliada"
+      class="visualizador-imagem"
+      src=""
+      alt="Foto ampliada do veículo"
+    >
+
+    <button
+      type="button"
+      id="btnVisualizadorProxima"
+      class="visualizador-seta visualizador-proxima"
+      aria-label="Próxima foto"
+    >›</button>
+
+    <div id="contadorAmpliado" class="visualizador-contador"></div>
+
+    <p class="visualizador-ajuda">
+      Use as setas do teclado para navegar • ESC para fechar
+    </p>
+  </div>
+
   <footer class="bg-tuned-dark text-gray-300 text-center py-7 mt-12 px-4">
     <p class="font-semibold">© 2026 Turbeiros Garage</p>
     <p class="text-sm mt-1">Paixão por máquinas, respeito pela estrada.</p>
@@ -293,6 +468,7 @@
     let imagemAtual = 0;
     let inicioToqueX = 0;
     let inicioToqueY = 0;
+    let visualizadorAberto = false;
 
     function escapar(valor) {
       return String(valor ?? '').replace(/[&<>"']/g, caractere => ({
@@ -600,6 +776,10 @@
         botao.classList.toggle('ativa', ativo);
         botao.setAttribute('aria-pressed', ativo ? 'true' : 'false');
       });
+
+      if (visualizadorAberto) {
+        atualizarImagemAmpliada();
+      }
     }
 
     function proximaImagem() {
@@ -614,6 +794,126 @@
 
       const anterior = (imagemAtual - 1 + imagens.length) % imagens.length;
       trocarImagem(anterior);
+    }
+
+    /* ABRIR E FECHAR FOTO AMPLIADA */
+
+    function abrirVisualizador() {
+      if (!imagens.length) return;
+
+      const visualizador = document.getElementById('visualizador');
+
+      visualizadorAberto = true;
+      atualizarImagemAmpliada();
+
+      visualizador.classList.add('aberto');
+      visualizador.setAttribute('aria-hidden', 'false');
+
+      document.body.style.overflow = 'hidden';
+
+      document.getElementById('btnFecharVisualizador').focus();
+    }
+
+    function fecharVisualizador() {
+      const visualizador = document.getElementById('visualizador');
+
+      visualizadorAberto = false;
+
+      visualizador.classList.remove('aberto');
+      visualizador.setAttribute('aria-hidden', 'true');
+
+      document.body.style.overflow = '';
+
+      const principal = document.getElementById('imagemPrincipal');
+
+      if (principal) {
+        principal.focus?.();
+      }
+    }
+
+    function atualizarImagemAmpliada() {
+      if (!imagens[imagemAtual]) return;
+
+      const imagem = document.getElementById('imagemAmpliada');
+      const contador = document.getElementById('contadorAmpliado');
+
+      imagem.src = imagens[imagemAtual].image_url;
+      imagem.alt = `Foto ${imagemAtual + 1} de ${imagens.length} - ${vehicle.brand} ${vehicle.model}`;
+
+      contador.textContent = `${imagemAtual + 1} / ${imagens.length}`;
+
+      const anterior = document.getElementById('btnVisualizadorAnterior');
+      const proxima = document.getElementById('btnVisualizadorProxima');
+
+      anterior.style.display = imagens.length > 1 ? 'flex' : 'none';
+      proxima.style.display = imagens.length > 1 ? 'flex' : 'none';
+    }
+
+    function configurarVisualizador() {
+      document.getElementById('btnFecharVisualizador')
+        .addEventListener('click', fecharVisualizador);
+
+      document.getElementById('btnVisualizadorAnterior')
+        .addEventListener('click', imagemAnterior);
+
+      document.getElementById('btnVisualizadorProxima')
+        .addEventListener('click', proximaImagem);
+
+      const visualizador = document.getElementById('visualizador');
+
+      visualizador.addEventListener('click', evento => {
+        if (evento.target === visualizador) {
+          fecharVisualizador();
+        }
+      });
+
+      document.addEventListener('keydown', evento => {
+        if (!visualizadorAberto) return;
+
+        if (evento.key === 'Escape') {
+          fecharVisualizador();
+        }
+
+        if (evento.key === 'ArrowRight') {
+          proximaImagem();
+        }
+
+        if (evento.key === 'ArrowLeft') {
+          imagemAnterior();
+        }
+      });
+
+      /* Deslizar fotos ampliadas no celular */
+      let toqueAmpliadoX = 0;
+      let toqueAmpliadoY = 0;
+
+      visualizador.addEventListener('touchstart', evento => {
+        if (!evento.touches || evento.touches.length !== 1) return;
+
+        toqueAmpliadoX = evento.touches[0].clientX;
+        toqueAmpliadoY = evento.touches[0].clientY;
+      }, { passive: true });
+
+      visualizador.addEventListener('touchend', evento => {
+        if (!visualizadorAberto || !evento.changedTouches) return;
+
+        const fimX = evento.changedTouches[0].clientX;
+        const fimY = evento.changedTouches[0].clientY;
+
+        const diferencaX = fimX - toqueAmpliadoX;
+        const diferencaY = fimY - toqueAmpliadoY;
+
+        if (
+          Math.abs(diferencaX) > 45 &&
+          Math.abs(diferencaX) > Math.abs(diferencaY) * 1.2
+        ) {
+          if (diferencaX < 0) {
+            proximaImagem();
+          } else {
+            imagemAnterior();
+          }
+        }
+      }, { passive: true });
     }
 
     function configurarDeslize() {
@@ -637,7 +937,6 @@
         const diferencaX = fimX - inicioToqueX;
         const diferencaY = fimY - inicioToqueY;
 
-        /* Só troca a foto se o movimento for horizontal */
         if (Math.abs(diferencaX) > 45 &&
             Math.abs(diferencaX) > Math.abs(diferencaY) * 1.2) {
 
@@ -737,6 +1036,8 @@
                         src="${escapar(primeiraImagem)}"
                         alt="${marca} ${modelo}"
                         class="imagem-principal"
+                        tabindex="0"
+                        title="Clique para ampliar a foto"
                         onerror="this.style.display='none'; document.getElementById('imagemIndisponivel').classList.remove('hidden');"
                       />
 
@@ -992,6 +1293,19 @@
         btnProxima.addEventListener('click', proximaImagem);
       }
 
+      const imagemPrincipal = document.getElementById('imagemPrincipal');
+
+      if (imagemPrincipal) {
+        imagemPrincipal.addEventListener('click', abrirVisualizador);
+
+        imagemPrincipal.addEventListener('keydown', evento => {
+          if (evento.key === 'Enter' || evento.key === ' ') {
+            evento.preventDefault();
+            abrirVisualizador();
+          }
+        });
+      }
+
       document.querySelectorAll('.miniatura').forEach(botao => {
         botao.addEventListener('click', () => {
           trocarImagem(Number(botao.dataset.index));
@@ -1054,6 +1368,8 @@
         mostrarMensagem('Conexão com o Supabase não encontrada.', true);
         return;
       }
+
+      configurarVisualizador();
 
       await carregarUsuario();
       await carregarAnuncio();
